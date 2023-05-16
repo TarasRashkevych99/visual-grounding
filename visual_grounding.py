@@ -83,6 +83,7 @@ if __name__ == "__main__":
     for filename in os.listdir("crops"):
         if filename.endswith(".jpg") or filename.endswith(".png"):
             file_path = os.path.join("crops", filename)
+            # print(file_path)
             image = Image.open(file_path)
             image = preprocess(image)
             images.append(image)
