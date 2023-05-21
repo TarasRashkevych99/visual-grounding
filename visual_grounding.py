@@ -58,7 +58,7 @@ def cosine_similarity(images_z: torch.Tensor, texts_z: torch.Tensor):
     return similarity.cpu()
 
 
-def clip_encoder(clip_model, images, texts):
+def encode_data_with_clip(clip_model, images, texts):
     images = torch.tensor(np.stack(images))
     text_tokens = clip.tokenize(texts)
     with torch.no_grad():
@@ -117,7 +117,7 @@ if __name__ == "__main__":
 
     cropped_images = crop_image_by_boxes("bus.jpg", boxes)
     preprocessed_images = preprocess_images(cropped_images, preprocess)
-    images_z, texts_z = clip_encoder(clip_model, preprocessed_images, texts)
+    images_z, texts_z = encode_data_with_clip(clip_model, preprocessed_images, texts)
 
     print_cosine_similarity_matrix(images_z, texts_z)
 
