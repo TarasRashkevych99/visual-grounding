@@ -4,69 +4,47 @@ import matplotlib.patches as patches
 from PIL import Image
 from clip import clip
 import torch
-import os
 import numpy as np
-import cv2
-
-# Load a model
-# model = YOLO("yolov8n.yaml")  # build a new model from scratch
-model = YOLO("yolov8n.pt")  # load a pretrained model (recommended for training)
-clip_model, preprocess = clip.load("RN50")
-
-clip_model = clip_model.eval()
-# Use the model
-# model.train(data="coco128.yaml", epochs=3)  # train the model
-# metrics = model.val()  # evaluate model performance on the validation set
-results = model("https://ultralytics.com/images/bus.jpg")  # predict on an image
-
-# success = model.export(format="onnx")  # export the model to ONNX format
 
 
-# im = Image.open("bus.jpg")
-# for result in results:
-#     # print(f"boxes: {result.boxes}")
-#     for index, xyxy in enumerate(result.boxes.xyxy):
-
-#         numpy_xyxy = xyxy.numpy()
-
-#         cropped_img = im.crop(
-#             (numpy_xyxy[0], numpy_xyxy[1], numpy_xyxy[2], numpy_xyxy[3])
-#         )
-#         cropped_img.save(f"cropped_img_{index}.jpg")
-#         # print(f"xywh: {xywh}")
-#         # print(f"masks: {result.masks}")
-#         # print(f"probs: {result.probs}")
-
-
-def plot_bounding_boxes(img_path, results, indeces):
+def plot_bounding_boxes(img_path, boxes, indeces):
     img = Image.open(img_path)
-    fig, ax = plt.subplots()
+    _, ax = plt.subplots()
     ax.imshow(img)
-    for result in results:
-        for index, xywh in enumerate(result.boxes.xywh):
-            print(result.boxes[index].cls)
-            if index in indeces:
-                rect = patches.Rectangle(
-                    (xywh[0] - xywh[2] / 2, xywh[1] - xywh[3] / 2),
-                    xywh[2],
-                    xywh[3],
-                    linewidth=1,
-                    edgecolor="r",
-                    facecolor="none",
-                    label=f"{result.boxes[index].cls}",
-                )
-                ax.add_patch(rect)
+    for index, xywh in enumerate(boxes.xywh):
+        if index in indeces:
+            anchor_point_x, anchor_point_y = (
+                xywh[0] - xywh[2] / 2,
+                xywh[1] - xywh[3] / 2,
+            )
+            width, height = (xywh[2], xywh[3])
+            rect = patches.Rectangle(
+                (anchor_point_x, anchor_point_y),
+                width,
+                height,
+                linewidth=1,
+                edgecolor="r",
+                facecolor="none",
+            )
+            ax.add_patch(rect)
+            l = ax.annotate(
+                f"{int(boxes[index].cls.item())}",
+                (anchor_point_x, anchor_point_y),
+                fontsize=8,
+                fontweight="bold",
+                color="white",
+                ha="left",
+                va="top",
+            )
+            # l.set_bbox(dict(facecolor="red", alpha=0.5, edgecolor="red"))
     plt.show()
 
 
-def clip_encoder(images, texts):
-    images = torch.tensor(np.stack(images))
-    text_tokens = clip.tokenize(texts)
-    with torch.no_grad():
-        images_z = clip_model.encode_image(images).float()
-        texts_z = clip_model.encode_text(text_tokens).float()
-
-    return images_z, texts_z
+def print_cosine_similarity_matrix(images_z, texts_z):
+    for i in images_z:
+        for j in texts_z:
+            print(f"{float(cosine_similarity(i,j)):.3f}", end="|")
+        print()
 
 
 def cosine_similarity(images_z: torch.Tensor, texts_z: torch.Tensor):
@@ -80,6 +58,45 @@ def cosine_similarity(images_z: torch.Tensor, texts_z: torch.Tensor):
     return similarity.cpu()
 
 
+def clip_encoder(clip_model, images, texts):
+    images = torch.tensor(np.stack(images))
+    text_tokens = clip.tokenize(texts)
+    with torch.no_grad():
+        images_z = clip_model.encode_image(images).float()
+        texts_z = clip_model.encode_text(text_tokens).float()
+
+    return images_z, texts_z
+
+
+def crop_image_by_boxes(img_path, boxes):
+    cropped_images = []
+    im = Image.open(img_path)
+    for index, xyxy in enumerate(boxes.xyxy):
+        cropped_img = im.crop(xyxy.numpy())
+        cropped_images.append(cropped_img)
+    return cropped_images
+
+
+def preprocess_images(images, preprocess):
+    preprocessed_images = []
+    for image in images:
+        preprocessed_images.append(preprocess(image))
+    return preprocessed_images
+
+
+def get_probs(images_z, texts_z):
+    images_z /= images_z.norm(dim=-1, keepdim=True)
+    texts_z /= texts_z.norm(dim=-1, keepdim=True)
+
+    probs = (100 * images_z @ texts_z.T).softmax(dim=0)
+    return probs
+
+
+def get_threshold(probs):
+    threshold = sum(probs[:]) / len(probs[:])
+    return threshold
+
+
 if __name__ == "__main__":
     model = YOLO("yolov8n.pt")
 
@@ -90,49 +107,27 @@ if __name__ == "__main__":
         # "People walking on the street",
         # "Two people walking",
         # "Road sign",
-        "Person with black coat",
+        # "Person with a black coat",
+        "Person with a yellow coat",
+        # "Person with a yellow coat and a person with a black coat",
     ]
-    images = []
 
     results = model("bus.jpg")
+    boxes = results[0].boxes
 
-    im = Image.open("bus.jpg")
-    for result in results:
-        for index, xyxy in enumerate(result.boxes.xyxy):
-            cropped_img = im.crop(xyxy.numpy())
-            images.append(preprocess(cropped_img))
+    cropped_images = crop_image_by_boxes("bus.jpg", boxes)
+    preprocessed_images = preprocess_images(cropped_images, preprocess)
+    images_z, texts_z = clip_encoder(clip_model, preprocessed_images, texts)
 
-    # for filename in os.listdir("crops"):
-    #     if filename.endswith(".jpg") or filename.endswith(".png"):
-    #         file_path = os.path.join("crops", filename)
-    #         print(file_path)
-    #         image = Image.open(file_path)
-    #         image = preprocess(image)
-    #         images.append(image)
+    print_cosine_similarity_matrix(images_z, texts_z)
 
-    images_z, texts_z = clip_encoder(images, texts)
+    probs = get_probs(images_z, texts_z)
 
-    images_z /= images_z.norm(dim=-1, keepdim=True)
-    texts_z /= texts_z.norm(dim=-1, keepdim=True)
+    threshold = get_threshold(probs)
 
-    outputs = (100 * images_z @ texts_z.T).softmax(dim=0)
-
-    threshold = sum(outputs[:]) / len(outputs[:])
     print(threshold)
-    print(outputs)
+    print(probs)
 
-    obj_indeces = [index for (index, prob) in enumerate(outputs[:]) if prob > threshold]
+    obj_indeces = [index for (index, prob) in enumerate(probs[:]) if prob > threshold]
 
-    # res_plotted = results[0].plot()
-    # cv2.imshow("result", res_plotted)
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
-
-    plot_bounding_boxes("bus.jpg", results, obj_indeces)
-
-    _, predicted = outputs.max(1)
-
-    for i in images_z:
-        for j in texts_z:
-            print(f"{float(cosine_similarity(i,j)):.3f}", end="|")
-        print()
+    plot_bounding_boxes("bus.jpg", boxes, obj_indeces)
