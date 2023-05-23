@@ -5,12 +5,12 @@ from PIL import Image
 from clip import clip
 import torch
 import numpy as np
+from utils import get_partitions
 
 
-def plot_bounding_boxes(img_path, boxes, indeces):
-    img = Image.open(img_path)
+def plot_bounding_boxes(image, boxes, indeces):
     _, ax = plt.subplots()
-    ax.imshow(img)
+    ax.imshow(image)
     for index, xywh in enumerate(boxes.xywh):
         if index in indeces:
             anchor_point_x, anchor_point_y = (
@@ -68,11 +68,10 @@ def encode_data_with_clip(clip_model, images, texts):
     return images_z, texts_z
 
 
-def crop_image_by_boxes(img_path, boxes):
+def crop_image_by_boxes(image, boxes):
     cropped_images = []
-    im = Image.open(img_path)
     for index, xyxy in enumerate(boxes.xyxy):
-        cropped_img = im.crop(xyxy.numpy())
+        cropped_img = image.crop(xyxy.numpy())
         cropped_images.append(cropped_img)
     return cropped_images
 
@@ -98,36 +97,44 @@ def get_threshold(probs):
 
 
 if __name__ == "__main__":
-    model = YOLO("yolov8n.pt")
+    yolo_model = YOLO("yolov8n.pt")
 
     clip_model, preprocess = clip.load("RN50")
     clip_model = clip_model.eval()
 
-    texts = [
-        # "People walking on the street",
-        # "Two people walking",
-        # "Road sign",
-        # "Person with a black coat",
-        "Person with a yellow coat",
-        # "Person with a yellow coat and a person with a black coat",
-    ]
+    # texts = [
+    #     # "People walking on the street",
+    #     # "Two people walking",
+    #     # "Road sign",
+    #     # "Person with a black coat",
+    #     "Person with a yellow coat",
+    #     # "Person with a yellow coat and a person with a black coat",
+    # ]
 
-    results = model("bus.jpg")
-    boxes = results[0].boxes
+    train, val, test = get_partitions()
 
-    cropped_images = crop_image_by_boxes("bus.jpg", boxes)
-    preprocessed_images = preprocess_images(cropped_images, preprocess)
-    images_z, texts_z = encode_data_with_clip(clip_model, preprocessed_images, texts)
+    for image, random_sentence in val:
+        results = yolo_model(image)
+        boxes = results[0].boxes
 
-    print_cosine_similarity_matrix(images_z, texts_z)
+        cropped_images = crop_image_by_boxes(image, boxes)
+        preprocessed_images = preprocess_images(cropped_images, preprocess)
+        images_z, texts_z = encode_data_with_clip(
+            clip_model, preprocessed_images, random_sentence
+        )
 
-    probs = get_probs(images_z, texts_z)
+        # print_cosine_similarity_matrix(images_z, texts_z)
 
-    threshold = get_threshold(probs)
+        probs = get_probs(images_z, texts_z)
 
-    print(threshold)
-    print(probs)
+        threshold = get_threshold(probs)
 
-    obj_indeces = [index for (index, prob) in enumerate(probs[:]) if prob > threshold]
+        print(random_sentence)
+        print(threshold)
+        print(probs)
 
-    plot_bounding_boxes("bus.jpg", boxes, obj_indeces)
+        obj_indeces = [
+            index for (index, prob) in enumerate(probs[:]) if prob > threshold
+        ]
+
+        plot_bounding_boxes(image, boxes, obj_indeces)
