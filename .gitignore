@@ -166,4 +166,8 @@ runs/**
 yolov8*.pt
 
 #Datasets
-datasets/*
+datasets/**
+refcocog/**
+
+#Local config files
+.DS_Store
