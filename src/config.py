@@ -3,9 +3,9 @@ import os
 
 def get_config():
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    dataset_root = os.path.join(project_root, "refcocog")
-    annotations_path = os.path.join(dataset_root, "annotations/refs(umd).p")
-    images_path = os.path.join(dataset_root, "images/")
+    dataset_root = f"{project_root}/refcocog"
+    annotations_path = f"{dataset_root}/annotations/refs(umd).p"
+    images_path = f"{dataset_root}/images"
 
     config = {
         "project_root": project_root,
@@ -15,3 +15,7 @@ def get_config():
     }
 
     return config
+
+
+if __name__ == "__main__":
+    print(get_config())

@@ -17,7 +17,7 @@ class DatasetSplit(Dataset):
 
     def __getitem__(self, index):
         annotation = self.annotations[index]
-        image_name = f"{self.image_path}{annotation['file_name'].replace('_' + str(annotation['ann_id']), '')}"
+        image_name = f"{self.image_path}/{annotation['file_name'].replace('_' + str(annotation['ann_id']), '')}"
         image = Image.open(image_name)
         if self.transform:
             image = self.transform(image)
