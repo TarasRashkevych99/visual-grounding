@@ -1,5 +1,6 @@
 import pickle
 from config import get_config
+import random
 
 
 class AnnotationSplitter:
@@ -17,3 +18,6 @@ class AnnotationSplitter:
                 self.val_set_annotations.append(a)
             if a["split"] == "test":
                 self.test_set_annotations.append(a)
+        random.shuffle(self.val_set_annotations)
+        random.shuffle(self.test_set_annotations)
+        random.shuffle(self.train_set_annotations)

@@ -24,4 +24,4 @@ class DatasetSplit(Dataset):
         sentences = annotation["sentences"]
         idx = np.random.randint(len(sentences))
         random_sentence = sentences[idx]["raw"]
-        return image, random_sentence
+        return image, random_sentence, image_name
