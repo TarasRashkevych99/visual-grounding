@@ -1,10 +1,12 @@
 import pickle
 import matplotlib.pyplot as plt
 from PIL import Image
+import json
 
 annotations_path = "./refcocog/annotations/refs(umd).p"
 
 annotations = pickle.load(open(annotations_path, "rb"))
+instances = json.load(open("refcocog/annotations/instances.json"))
 
 ids = set()
 for annotaition in annotations:
@@ -18,12 +20,21 @@ for annotaition in annotations:
     if annotaition["image_id"] == 41700:
         print(annotaition)
 
-plt.subplot(1, 2, 1)
-im1 = Image.open("./refcocog/images/COCO_train2014_000000041700_197196.jpg")
-im2 = Image.open("./refcocog/images/COCO_train2014_000000041700_191423.jpg")
+
+
+for i in instances['annotations']:
+    if i['id'] == 197196:
+        bbox1 = i['bbox']
+    if i['id'] == 191423:
+        bbox2 = i['bbox']
+
+_, ax = plt.subplots()
+im1 = Image.open("./refcocog/images/COCO_train2014_000000041700.jpg")
 plt.imshow(im1)
-plt.subplot(1, 2, 2)
-plt.imshow(im2)
+rect1 = plt.Rectangle((bbox1[0], bbox1[1]), bbox1[2], bbox1[3], linewidth=1, edgecolor='g', facecolor='none')
+rect2 = plt.Rectangle((bbox2[0], bbox2[1]), bbox2[2], bbox2[3], linewidth=1, edgecolor='r', facecolor='none')
+ax.add_patch(rect1)
+ax.add_patch(rect2)
 plt.show()
 
 print(len(ids))

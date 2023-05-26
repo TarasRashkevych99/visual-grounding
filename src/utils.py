@@ -9,7 +9,7 @@ import json
 from PIL import Image
 
 
-def plot_bounding_boxes(image, boxes, indeces, image_name=None):
+def plot_bounding_boxes(image, boxes, indeces, ann_id):
     _, ax = plt.subplots()
     ax.imshow(image)
     for index, xywh in enumerate(boxes.xywh):
@@ -37,10 +37,9 @@ def plot_bounding_boxes(image, boxes, indeces, image_name=None):
                 ha="left",
                 va="top",
             )
-            if image_name:
-                plot_ground_bbox(ax, image_name)
+            plot_ground_bbox(ax, ann_id)
             # l.set_bbox(dict(facecolor="red", alpha=0.5, edgecolor="red"))
-    #plt.show()
+    plt.show()
 
 
 def print_cosine_similarity_matrix(images_z, texts_z):
@@ -106,18 +105,25 @@ def get_partitions(transform=None):
     test = DatasetSplit(annotation_splitter.test_set_annotations.copy(), transform)
     return train, val, test
 
-def plot_ground_bbox(image_name, bbox):
-    path_to_images = 'refcocog/images'
-    #bbox = json.load(open("refcocog/annotations/instances_bbox.json"))
-    filename_truncated = image_name[-13:]
-    first_non_zero_index = next((i for i, c in enumerate(filename_truncated) if c != '0'), None)
-    image_id = filename_truncated[first_non_zero_index:-4]
-    if image_id in bbox.keys():
-        # im = Image.open(image_name)
-        # ax.imshow(im)
-        # for box in bbox[image_id]:
-        #     rect = patches.Rectangle((box[0], box[1]), box[2], box[3], linewidth=1, edgecolor='g', facecolor='none')
-        #     ax.add_patch(rect)
-        print(f"Image {image_id} found in bbox")
-    else:
-        print(f"Image {image_name} not found in bbox")
+def plot_ground_bbox(ax, ann_id):
+    # path_to_images = 'refcocog/images'
+    # #bbox = json.load(open("refcocog/annotations/instances_bbox.json"))
+    # filename_truncated = image_name[-13:]
+    # first_non_zero_index = next((i for i, c in enumerate(filename_truncated) if c != '0'), None)
+    # image_id = filename_truncated[first_non_zero_index:-4]
+    # if image_id in bbox.keys():
+    #     # im = Image.open(image_name)
+    #     # ax.imshow(im)
+    #     # for box in bbox[image_id]:
+    #     #     rect = patches.Rectangle((box[0], box[1]), box[2], box[3], linewidth=1, edgecolor='g', facecolor='none')
+    #     #     ax.add_patch(rect)
+    #     print(f"Image {image_id} found in bbox")
+    # else:
+    #     print(f"Image {image_name} not found in bbox")
+    instances = json.load(open("refcocog/annotations/instances.json"))
+    for annotation in instances['annotations']:
+        if annotation['id'] == ann_id:
+            bbox = annotation['bbox']
+            break
+    rect = patches.Rectangle((bbox[0], bbox[1]), bbox[2], bbox[3], linewidth=1, edgecolor='g', facecolor='none')
+    ax.add_patch(rect)
