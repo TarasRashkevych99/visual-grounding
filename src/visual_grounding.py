@@ -1,5 +1,6 @@
 from ultralytics import YOLO
 from clip import clip
+from models.CustomDataset import CustomDataset
 import utils
 
 
@@ -9,9 +10,14 @@ if __name__ == "__main__":
     clip_model, preprocess = clip.load("RN50")
     clip_model = clip_model.eval()
 
-    train, val, test = utils.get_partitions()
+    train_dataset = CustomDataset(split="train", shuffle=True)
+    val_dataset = CustomDataset(split="val", shuffle=True)
+    test_dataset = CustomDataset(split="test")
 
-    for image, random_sentence in val:
+    total_iou = 0
+    n_samples = 0
+
+    for image, random_sentence, ground_bbox, category_id in val_dataset:
         results = yolo_model(image)
         boxes = results[0].boxes
 
@@ -35,4 +41,23 @@ if __name__ == "__main__":
             index for (index, prob) in enumerate(probs[:]) if prob > threshold
         ]
 
-        utils.plot_bounding_boxes(image, boxes, obj_indeces)
+        utils.plot_bounding_boxes(image, boxes, obj_indeces, ground_bbox)
+
+        ground_bbox_xyxy = utils.xywh_to_xyxy(ground_bbox)
+        for index, xywh in enumerate(boxes.xyxy):
+            if index in obj_indeces:
+                iou = utils.iou(xywh, ground_bbox_xyxy)
+                n_samples += 1
+                total_iou += iou
+                print(f"IOU for index {index}: {iou}")
+                # print(f"x0{xywh[0]} y0{xywh[1]} x1{xywh[2]} y1{xywh[3]}")
+                # print(f"x0{ground_bbox_xyxy[0]} y0{ground_bbox_xyxy[1]} x1{ground_bbox_xyxy[2]} y1{ground_bbox_xyxy[3]}")
+                # _, ax = plt.subplots()
+                # plt.imshow(image)
+                # plt.scatter(xywh[0], xywh[1], c="g")
+                # plt.scatter(xywh[2], xywh[3], c="g")
+                # plt.scatter(ground_bbox_xyxy[0], ground_bbox_xyxy[1], c="r")
+                # plt.scatter(ground_bbox_xyxy[2], ground_bbox_xyxy[3], c="r")
+                # plt.show()
+
+print(f"IOU: {iou/n_samples}")

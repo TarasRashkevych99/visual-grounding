@@ -4,7 +4,8 @@ import os
 def get_config():
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     dataset_root = f"{project_root}/refcocog"
-    annotations_path = f"{dataset_root}/annotations/refs(umd).p"
+    #annotations_path = f"{dataset_root}/annotations/refs(umd).p"
+    annotations_path = "./refcocog/annotations"
     images_path = f"{dataset_root}/images"
 
     config = {

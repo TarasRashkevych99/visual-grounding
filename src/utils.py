@@ -3,11 +3,9 @@ import matplotlib.patches as patches
 from clip import clip
 import torch
 import numpy as np
-from models.DatasetSplit import DatasetSplit
-from models.AnnotationSplitter import AnnotationSplitter
 
 
-def plot_bounding_boxes(image, boxes, indeces):
+def plot_bounding_boxes(image, boxes, indeces, ground_bbox=None):
     _, ax = plt.subplots()
     ax.imshow(image)
     for index, xywh in enumerate(boxes.xywh):
@@ -35,6 +33,9 @@ def plot_bounding_boxes(image, boxes, indeces):
                 ha="left",
                 va="top",
             )
+    if ground_bbox:
+        rect = plt.Rectangle((ground_bbox[0], ground_bbox[1]), ground_bbox[2], ground_bbox[3], linewidth=1, edgecolor='g', facecolor='none')
+        ax.add_patch(rect)
             # l.set_bbox(dict(facecolor="red", alpha=0.5, edgecolor="red"))
     plt.show()
 
@@ -94,10 +95,23 @@ def get_threshold(probs):
     threshold = sum(probs[:]) / len(probs[:])
     return threshold
 
+def xywh_to_xyxy(xywh):
+    xyxy = np.zeros(4)
+    xyxy[0] = xywh[0]
+    xyxy[1] = xywh[1]
+    xyxy[2] = xywh[0] + xywh[2] 
+    xyxy[3] = xywh[1] + xywh[3] 
+    return xyxy
 
-def get_partitions(transform=None):
-    annotation_splitter = AnnotationSplitter()
-    train = DatasetSplit(annotation_splitter.train_set_annotations.copy(), transform)
-    val = DatasetSplit(annotation_splitter.val_set_annotations.copy(), transform)
-    test = DatasetSplit(annotation_splitter.test_set_annotations.copy(), transform)
-    return train, val, test
+def iou(box1, box2):
+    x1 = max(box1[0], box2[0])
+    y1 = max(box1[1], box2[1])
+    x2 = min(box1[2], box2[2])
+    y2 = min(box1[3], box2[3])
+    intersection_area = max(0, x2 - x1 + 1) * max(0, y2 - y1 + 1)
+    box1_area = (box1[2] - box1[0] + 1) * (box1[3] - box1[1] + 1)
+    box2_area = (box2[2] - box2[0] + 1) * (box2[3] - box2[1] + 1)
+
+    # Calculate the IoU
+    iou = intersection_area / float(box1_area + box2_area - intersection_area)
+    return iou
