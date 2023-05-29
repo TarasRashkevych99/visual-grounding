@@ -2,6 +2,7 @@ from ultralytics import YOLO
 from clip import clip
 from models.CustomDataset import CustomDataset
 import utils
+import torch
 
 
 if __name__ == "__main__":
@@ -31,22 +32,23 @@ if __name__ == "__main__":
 
         probs = utils.get_probs(images_z, texts_z)
 
-        threshold = utils.get_threshold(probs)
+        # threshold = utils.get_threshold(probs)
 
-        print(random_sentence)
-        print(threshold)
-        print(probs)
+        # print(random_sentence)
+        # print(threshold)
+        # print(probs)
 
-        obj_indeces = [
-            index for (index, prob) in enumerate(probs[:]) if prob > threshold
-        ]
+        # obj_indeces = [
+        #     index for (index, prob) in enumerate(probs[:]) if prob > threshold
+        # ]
 
-        utils.plot_bounding_boxes(image, boxes, obj_indeces, ground_bbox)
+        obj_index = torch.argmax(probs)
+        # utils.plot_bounding_boxes(image, boxes, obj_indeces, ground_bbox)
 
         ground_bbox_xyxy = utils.xywh_to_xyxy(ground_bbox)
-        for index, xywh in enumerate(boxes.xyxy):
-            if index in obj_indeces:
-                iou = utils.iou(xywh, ground_bbox_xyxy)
+        for index, xyxy in enumerate(boxes.xyxy):
+            if index == obj_index:
+                iou = utils.iou(xyxy, ground_bbox_xyxy)
                 n_samples += 1
                 total_iou += iou
                 print(f"IOU for index {index}: {iou}")
