@@ -25,16 +25,20 @@ class Metrics:
             return
 
         iou = self._compute_iou(predicted_boxes, ground_boxes)
+
         if verbose:
             print(f"Annotations analized: {self.annotations_analized_so_far}")
             print("+----------------------+")
             print(f"IOU: {iou}")
+            
         if iou > self.iou_threshold and prob > self.prob_threshold:
             self.TP += 1
         elif iou <= self.iou_threshold and prob > self.prob_threshold:
             self.FP += 1
         elif prob <= self.prob_threshold:
             self.FN += 1
+
+        self.iou += iou
         self.annotations_analized_so_far += 1
 
     def print_metrics(self):
