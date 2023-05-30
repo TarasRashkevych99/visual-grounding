@@ -79,8 +79,8 @@ def encode_data_with_clip(clip_model, images, texts):
 
 def crop_image_by_boxes(image, boxes):
     cropped_images = []
-    for index, xyxy in enumerate(boxes.xyxy.cpu()):
-        cropped_img = image.crop(xyxy.numpy())
+    for index, xyxy in enumerate(boxes.xyxy):
+        cropped_img = image.crop(xyxy.cpu().numpy())
         cropped_images.append(cropped_img)
     return cropped_images
 
