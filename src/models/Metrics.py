@@ -12,7 +12,18 @@ class Metrics:
         self.FN = 0
         self.annotations_analized_so_far = 0
 
-    def update_metrics(self, predicted_boxes, ground_boxes, prob, verbose=False):
+    def update_metrics(
+        self,
+        predicted_boxes=None,
+        ground_boxes=None,
+        prob=0.0,
+        verbose=False,
+        no_predictions=False,
+    ):
+        if no_predictions:
+            self.FN += 1
+            return
+
         iou = self._compute_iou(predicted_boxes, ground_boxes)
         if verbose:
             print(f"Annotations analized: {self.annotations_analized_so_far}")
