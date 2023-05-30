@@ -20,11 +20,11 @@ if __name__ == "__main__":
     test_dataset = CustomDataset(split="test")
 
     metrics = Metrics(
-        iou_threshold=0.5, prob_threshold=0.6, dataset_dim=len(val_dataset)
+        iou_threshold=0.5, prob_threshold=0.5, dataset_dim=len(val_dataset)
     )
 
     for image, random_sentence, ground_bbox, category_id in val_dataset:
-        results = yolo_model.predict(source=image, device=device, show=False)
+        results = yolo_model.predict(source=image, device=device)
         boxes = results[0].boxes
         if torch.numel(boxes.data) == 0:
             metrics.update_metrics(no_predictions=True)
