@@ -1,5 +1,7 @@
 import os
 
+import torch
+
 
 def get_config():
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -8,6 +10,7 @@ def get_config():
     refs_path = f"{annotations_path}/refs(umd).p"
     instances_path = f"{annotations_path}/instances.json"
     images_path = f"{dataset_root}/images"
+    device = "cuda" if torch.cuda.is_available() else "cpu"
 
     config = {
         "project_root": project_root,
@@ -16,6 +19,7 @@ def get_config():
         "refs_path": refs_path,
         "instances_path": instances_path,
         "images_path": images_path,
+        "device": device,
     }
 
     return config

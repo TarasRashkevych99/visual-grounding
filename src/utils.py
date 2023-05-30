@@ -4,6 +4,8 @@ from clip import clip
 import torch
 import numpy as np
 
+from config import get_config
+
 
 def plot_bounding_boxes(image, boxes, indeces, ground_bbox=None):
     _, ax = plt.subplots()
@@ -77,7 +79,7 @@ def encode_data_with_clip(clip_model, images, texts):
 
 def crop_image_by_boxes(image, boxes):
     cropped_images = []
-    for index, xyxy in enumerate(boxes.xyxy):
+    for index, xyxy in enumerate(boxes.xyxy.to("cpu")):
         cropped_img = image.crop(xyxy.numpy())
         cropped_images.append(cropped_img)
     return cropped_images
@@ -86,7 +88,7 @@ def crop_image_by_boxes(image, boxes):
 def preprocess_images(images, preprocess):
     preprocessed_images = []
     for image in images:
-        preprocessed_images.append(preprocess(image))
+        preprocessed_images.append(preprocess(image).to(get_config()["device"]))
     return preprocessed_images
 
 

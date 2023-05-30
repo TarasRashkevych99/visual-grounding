@@ -1,3 +1,4 @@
+from config import get_config
 from models.Metrics import Metrics
 from ultralytics import YOLO
 from clip import clip
@@ -7,6 +8,8 @@ import torch
 
 
 if __name__ == "__main__":
+    device = get_config()["device"]
+
     yolo_model = YOLO("yolov8n.pt")
 
     clip_model, preprocess = clip.load("RN50")
@@ -21,10 +24,9 @@ if __name__ == "__main__":
     )
 
     for image, random_sentence, ground_bbox, category_id in val_dataset:
-        results = yolo_model(image)
+        results = yolo_model.predict(source=image, device=device)
         boxes = results[0].boxes
-        print(boxes)
-        if boxes.numel() == 0:
+        if torch.numel(boxes.data) == 0:
             metrics.update_metrics(no_predictions=True)
         else:
             cropped_images = utils.crop_image_by_boxes(image, boxes)
