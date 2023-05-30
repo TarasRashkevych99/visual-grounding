@@ -1,3 +1,4 @@
+from models.Metrics import Metrics
 from ultralytics import YOLO
 from clip import clip
 from models.CustomDataset import CustomDataset
@@ -15,8 +16,9 @@ if __name__ == "__main__":
     val_dataset = CustomDataset(split="val", shuffle=True)
     test_dataset = CustomDataset(split="test")
 
-    total_iou = 0
-    n_samples = 0
+    metrics = Metrics(
+        iou_threshold=0.5, prob_threshold=0.5, dataset_dim=len(val_dataset)
+    )
 
     for image, random_sentence, ground_bbox, category_id in val_dataset:
         results = yolo_model(image)
@@ -38,20 +40,17 @@ if __name__ == "__main__":
         # print(threshold)
         # print(probs)
 
-        # obj_indeces = [
-        #     index for (index, prob) in enumerate(probs[:]) if prob > threshold
-        # ]
-
         obj_index = torch.argmax(probs)
+        print(f"obj_index: {obj_index}")
         # utils.plot_bounding_boxes(image, boxes, obj_indeces, ground_bbox)
 
         ground_bbox_xyxy = utils.xywh_to_xyxy(ground_bbox)
         for index, xyxy in enumerate(boxes.xyxy):
             if index == obj_index:
-                iou = utils.iou(xyxy, ground_bbox_xyxy)
-                n_samples += 1
-                total_iou += iou
-                print(f"IOU for index {index}: {iou}")
+                metrics.update_metrics(
+                    xyxy, ground_bbox_xyxy, prob=probs[obj_index], verbose=True
+                )
+
                 # print(f"x0{xywh[0]} y0{xywh[1]} x1{xywh[2]} y1{xywh[3]}")
                 # print(f"x0{ground_bbox_xyxy[0]} y0{ground_bbox_xyxy[1]} x1{ground_bbox_xyxy[2]} y1{ground_bbox_xyxy[3]}")
                 # _, ax = plt.subplots()
@@ -62,4 +61,8 @@ if __name__ == "__main__":
                 # plt.scatter(ground_bbox_xyxy[2], ground_bbox_xyxy[3], c="r")
                 # plt.show()
 
-print(f"IOU: {iou/n_samples}")
+    metrics.compute_final_iou()
+    metrics.compute_precision()
+    metrics.compute_recall()
+    metrics.compute_f1_score()
+    metrics.print_metrics()
