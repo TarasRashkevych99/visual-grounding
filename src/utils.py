@@ -1,16 +1,15 @@
-from ultralytics import YOLO
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
-from PIL import Image
 from clip import clip
 import torch
 import numpy as np
 
+from config import get_config
 
-def plot_bounding_boxes(img_path, boxes, indeces):
-    img = Image.open(img_path)
+
+def plot_bounding_boxes(image, boxes, indeces, ground_bbox=None):
     _, ax = plt.subplots()
-    ax.imshow(img)
+    ax.imshow(image)
     for index, xywh in enumerate(boxes.xywh):
         if index in indeces:
             anchor_point_x, anchor_point_y = (
@@ -36,7 +35,17 @@ def plot_bounding_boxes(img_path, boxes, indeces):
                 ha="left",
                 va="top",
             )
-            # l.set_bbox(dict(facecolor="red", alpha=0.5, edgecolor="red"))
+    if ground_bbox:
+        rect = plt.Rectangle(
+            (ground_bbox[0], ground_bbox[1]),
+            ground_bbox[2],
+            ground_bbox[3],
+            linewidth=1,
+            edgecolor="g",
+            facecolor="none",
+        )
+        ax.add_patch(rect)
+        # l.set_bbox(dict(facecolor="red", alpha=0.5, edgecolor="red"))
     plt.show()
 
 
@@ -59,20 +68,21 @@ def cosine_similarity(images_z: torch.Tensor, texts_z: torch.Tensor):
 
 
 def encode_data_with_clip(clip_model, images, texts):
-    images = torch.tensor(np.stack(images))
-    text_tokens = clip.tokenize(texts)
+    images = torch.tensor(np.stack([image.to("cpu") for image in images])).to(
+        get_config()["device"]
+    )
+    text_tokens = clip.tokenize(texts).to(get_config()["device"])
     with torch.no_grad():
-        images_z = clip_model.encode_image(images).float()
-        texts_z = clip_model.encode_text(text_tokens).float()
+        images_z = clip_model.encode_image(images).float().to(get_config()["device"])
+        texts_z = clip_model.encode_text(text_tokens).float().to(get_config()["device"])
 
     return images_z, texts_z
 
 
-def crop_image_by_boxes(img_path, boxes):
+def crop_image_by_boxes(image, boxes):
     cropped_images = []
-    im = Image.open(img_path)
-    for index, xyxy in enumerate(boxes.xyxy):
-        cropped_img = im.crop(xyxy.numpy())
+    for index, xyxy in enumerate(boxes.xyxy.to("cpu")):
+        cropped_img = image.crop(xyxy.numpy())
         cropped_images.append(cropped_img)
     return cropped_images
 
@@ -80,7 +90,7 @@ def crop_image_by_boxes(img_path, boxes):
 def preprocess_images(images, preprocess):
     preprocessed_images = []
     for image in images:
-        preprocessed_images.append(preprocess(image))
+        preprocessed_images.append(preprocess(image).to(get_config()["device"]))
     return preprocessed_images
 
 
@@ -97,37 +107,10 @@ def get_threshold(probs):
     return threshold
 
 
-if __name__ == "__main__":
-    model = YOLO("yolov8n.pt")
-
-    clip_model, preprocess = clip.load("RN50")
-    clip_model = clip_model.eval()
-
-    texts = [
-        # "People walking on the street",
-        # "Two people walking",
-        # "Road sign",
-        # "Person with a black coat",
-        "Person with a yellow coat",
-        # "Person with a yellow coat and a person with a black coat",
-    ]
-
-    results = model("bus.jpg")
-    boxes = results[0].boxes
-
-    cropped_images = crop_image_by_boxes("bus.jpg", boxes)
-    preprocessed_images = preprocess_images(cropped_images, preprocess)
-    images_z, texts_z = encode_data_with_clip(clip_model, preprocessed_images, texts)
-
-    print_cosine_similarity_matrix(images_z, texts_z)
-
-    probs = get_probs(images_z, texts_z)
-
-    threshold = get_threshold(probs)
-
-    print(threshold)
-    print(probs)
-
-    obj_indeces = [index for (index, prob) in enumerate(probs[:]) if prob > threshold]
-
-    plot_bounding_boxes("bus.jpg", boxes, obj_indeces)
+def xywh_to_xyxy(xywh):
+    xyxy = np.zeros(4)
+    xyxy[0] = xywh[0]
+    xyxy[1] = xywh[1]
+    xyxy[2] = xywh[0] + xywh[2]
+    xyxy[3] = xywh[1] + xywh[3]
+    return xyxy
