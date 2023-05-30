@@ -23,8 +23,8 @@ if __name__ == "__main__":
     for image, random_sentence, ground_bbox, category_id in val_dataset:
         results = yolo_model(image)
         boxes = results[0].boxes
-
-        if boxes is None:
+        print(boxes)
+        if boxes.numel() == 0:
             metrics.update_metrics(no_predictions=True)
         else:
             cropped_images = utils.crop_image_by_boxes(image, boxes)
