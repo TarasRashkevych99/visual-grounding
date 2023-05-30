@@ -28,9 +28,9 @@ class Metrics:
 
         if verbose:
             print(f"Annotations analized: {self.annotations_analized_so_far}")
-            print("+----------------------+")
             print(f"IOU: {iou}")
-            
+            print("+----------------------+")
+
         if iou > self.iou_threshold and prob > self.prob_threshold:
             self.TP += 1
         elif iou <= self.iou_threshold and prob > self.prob_threshold:
@@ -42,6 +42,7 @@ class Metrics:
         self.annotations_analized_so_far += 1
 
     def print_metrics(self):
+        print("+----------------------+")
         print(f"Annotations analized: {self.annotations_analized_so_far}")
         print("+----------------------+")
         print(f"IOU: {self.iou}")
@@ -51,6 +52,7 @@ class Metrics:
         print(f"TP: {self.TP}")
         print(f"FP: {self.FP}")
         print(f"FN: {self.FN}")
+        print("+----------------------+")
 
     def _compute_iou(self, predicted_box, ground_box):
         x1 = max(predicted_box[0], ground_box[0])

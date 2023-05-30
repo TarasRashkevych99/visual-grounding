@@ -20,7 +20,7 @@ if __name__ == "__main__":
     test_dataset = CustomDataset(split="test")
 
     metrics = Metrics(
-        iou_threshold=0.5, prob_threshold=0.5, dataset_dim=len(val_dataset)
+        iou_threshold=0.5, prob_threshold=0.7, dataset_dim=len(val_dataset)
     )
 
     for image, random_sentence, ground_bbox, category_id in val_dataset:
