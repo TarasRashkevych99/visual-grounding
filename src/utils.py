@@ -73,8 +73,8 @@ def encode_data_with_clip(clip_model, images, texts):
     )
     text_tokens = clip.tokenize(texts)
     with torch.no_grad():
-        images_z = clip_model.encode_image(images).float()
-        texts_z = clip_model.encode_text(text_tokens).float()
+        images_z = clip_model.encode_image(images).float().to(get_config()["device"])
+        texts_z = clip_model.encode_text(text_tokens).float().to(get_config()["device"])
 
     return images_z, texts_z
 
