@@ -31,7 +31,7 @@ print("Images number: " + str(count_images))
 print("Ids lenght: " + str(len(ids)))
 
 for cat in instances['categories']:
-    print(cat['name'] + ', ', end='')
+    print(f"'{cat['name']}', ", end='')
 
 # name_suffix = str(instances['annotations'][5]['image_id']) + '.jpg'
 
