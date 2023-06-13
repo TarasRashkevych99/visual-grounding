@@ -30,6 +30,9 @@ for i in instances['annotations']:
 print("Images number: " + str(count_images))
 print("Ids lenght: " + str(len(ids)))
 
+for cat in instances['categories']:
+    print(cat['name'] + ', ', end='')
+
 # name_suffix = str(instances['annotations'][5]['image_id']) + '.jpg'
 
 # for root, dirs, files in os.walk("refcocog/images"):
