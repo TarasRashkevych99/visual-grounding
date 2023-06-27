@@ -68,15 +68,12 @@ def cosine_similarity(images_z: torch.Tensor, texts_z: torch.Tensor):
 
 
 def encode_data_with_clip(clip_model, images, texts):
-    images = torch.tensor(np.stack([image.to("cpu") for image in images])).to(
-        get_config()["device"]
-    )
     text_tokens = clip.tokenize(texts).to(get_config()["device"])
     with torch.no_grad():
         images_z = clip_model.encode_image(images).float().to(get_config()["device"])
         texts_z = clip_model.encode_text(text_tokens).float().to(get_config()["device"])
 
-    return images_z, texts_z
+    return torch.mm(images_z.T, texts_z)
 
 
 def crop_image_by_boxes(image, boxes):

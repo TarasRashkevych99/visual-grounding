@@ -1,14 +1,17 @@
 from PIL import Image
+import torch
 from torch.utils.data import Dataset
 from config import get_config
 import json
 import numpy as np
 import random
+import utils  
 
 
 class CustomDataset(Dataset):
-    def __init__(self, transform=None, split="train", shuffle=False):
+    def __init__(self, transform=None, split="train", shuffle=False, model=None):
         super().__init__()
+        self.clip = model
         self.annotations_path = get_config()["annotations_path"]
         if split == "train":
             self.instances = list(
@@ -36,9 +39,10 @@ class CustomDataset(Dataset):
         image = Image.open(f"{self.images_path}/{self.instances[index]['image_name']}")
         bbox = self.instances[index]["bbox"]
         if self.transform:
-            image = self.transform(image)
+            image = self.transform(image).to(get_config()["device"])
         sentences = self.instances[index]["sentences"]
         idx = np.random.randint(len(sentences))
         random_sentence = sentences[idx]
         category_id = self.instances[index]["category_id"]
-        return image, random_sentence, bbox, category_id
+        embedding = utils.encode_data_with_clip(self.clip, image.unsqueeze(0), random_sentence)
+        return embedding, bbox, category_id
