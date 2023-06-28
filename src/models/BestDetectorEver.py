@@ -61,16 +61,15 @@ def training_step(net, data_loader, optimizer, cost_function):
     net.train()
 
     # iterate over the training set
-    for batch_idx, (inputs, targets) in enumerate(data_loader):
+    for embeddings, bboxes, category_id in data_loader:
         # load data into GPU
-        inputs = inputs.to(get_config()["device"])
-        targets = targets.to(get_config()["device"])
-
+        embeddings = embeddings.to(get_config()["device"]).unsqueeze(1)
+        bboxes = bboxes.to(get_config()["device"])
         # forward pass
-        outputs = net(inputs)
+        outputs = net(embeddings)
 
         # loss computation
-        loss = cost_function(outputs, targets)
+        loss = cost_function(outputs, bboxes)
 
         # backward pass
         loss.backward()
@@ -82,14 +81,12 @@ def training_step(net, data_loader, optimizer, cost_function):
         optimizer.zero_grad()
 
         # fetch prediction and loss value
-        samples += inputs.shape[0]
+        samples += embeddings.shape[0]
         cumulative_loss += loss.item()
-        _, predicted = outputs.max(
-            dim=1
-        )  # max() returns (maximum_value, index_of_maximum_value)
+        predicted = outputs
 
         # compute training accuracy
-        localization_accuracy += compute_iou(predicted, targets)
+        localization_accuracy += sum([compute_iou(pred, bboxes[index]) for index, pred in enumerate(predicted)])
 
     return cumulative_loss / samples, localization_accuracy / samples * 100
 
@@ -107,9 +104,8 @@ def test_step(net, data_loader, cost_function):
         # iterate over the test set
         for embeddings, bboxes, category_id in data_loader:
             # load data into GPU
-            embeddings = embeddings.to(get_config()["device"])
+            embeddings = embeddings.to(get_config()["device"]).unsqueeze(1)
             bboxes = bboxes.to(get_config()["device"])
-
             # forward pass
             outputs = net(embeddings)
 
@@ -123,12 +119,14 @@ def test_step(net, data_loader, cost_function):
             predicted = outputs
 
             # compute accuracy
-            localization_accuracy += compute_iou(predicted, bboxes)
+            localization_accuracy += sum([compute_iou(pred, bboxes[index]) for index, pred in enumerate(predicted)])
 
     return cumulative_loss / samples, localization_accuracy / samples * 100
 
 
 def compute_iou(predicted_box, ground_box):
+    # print(predicted_box)
+    # print(ground_box)
     x1 = max(predicted_box[0], ground_box[0])
     y1 = max(predicted_box[1], ground_box[1])
     x2 = min(predicted_box[2], ground_box[2])
