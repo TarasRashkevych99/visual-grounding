@@ -9,25 +9,25 @@ class BestDetectorEver(nn.Module):
         super().__init__()
 
         self.best_detector = nn.Sequential(
+            nn.AvgPool2d(kernel_size=4, stride=4),  # Output: 16 x 512 x 512
             nn.Conv2d(
                 1, 16, kernel_size=3, stride=1, padding=1
-            ),  # Output: 16 x 1024 x 1024
+            ),  # Output: 16 x 256 x 256
             nn.ReLU(),
-            nn.AvgPool2d(kernel_size=2, stride=2),  # Output: 16 x 512 x 512
+            nn.AvgPool2d(kernel_size=2, stride=2),  # Output: 16 x 128 x 128
             nn.Conv2d(
                 16, 32, kernel_size=3, stride=1, padding=1
-            ),  # Output: 32 x 512 x 512
+            ),  # Output: 32 x 128 x 128
             nn.ReLU(),
-            nn.AvgPool2d(kernel_size=2, stride=2),  # Output: 32 x 256 x 256
+            nn.AvgPool2d(kernel_size=2, stride=2),  # Output: 32 x 64 x 64
             nn.Conv2d(
                 32, 64, kernel_size=3, stride=1, padding=1
-            ),  # Output: 64 x 256 x 256
+            ),  # Output: 64 x 64 x 64
             nn.ReLU(),
-            nn.AvgPool2d(kernel_size=2, stride=2),  # Output: 64 x 128 x 128
+            nn.AvgPool2d(kernel_size=2, stride=2),  # Output: 64 x 32 x 32
             nn.Flatten(),
-            nn.Linear(64 * 128 * 128, 128),  # Input: 64 * 128 * 128, Output: 128
+            nn.Linear(64 * 32 * 32, 32),  # Input: 64 * 128 * 128, Output: 128
             nn.ReLU(),
-            nn.Linear(128, 32),  # Input: 128, Output: 10 (Assuming 10 output classes)
             nn.Linear(32, 4),  # Input: 128, Output: 10 (Assuming 10 output classes)
         )
 
@@ -56,12 +56,14 @@ def training_step(net, data_loader, optimizer, cost_function):
     samples = 0.0
     cumulative_loss = 0.0
     localization_accuracy = 0.0
-
+    counter = 0
     # set the network to training mode
     net.train()
 
     # iterate over the training set
     for embeddings, bboxes, category_id in data_loader:
+        counter += 1
+        print("Batch: ", counter)
         # load data into GPU
         embeddings = embeddings.to(get_config()["device"]).unsqueeze(1)
         bboxes = bboxes.to(get_config()["device"])
