@@ -100,11 +100,13 @@ def test_step(net, data_loader, cost_function):
 
     # set the network to evaluation mode
     net.eval()
-
+    counter = 0
     # disable gradient computation (we are only testing, we do not want our model to be modified in this step!)
     with torch.no_grad():
         # iterate over the test set
         for embeddings, bboxes, category_id in data_loader:
+            counter += 1
+            print("Batch: ", counter)
             # load data into GPU
             embeddings = embeddings.to(get_config()["device"]).unsqueeze(1)
             bboxes = bboxes.to(get_config()["device"])
