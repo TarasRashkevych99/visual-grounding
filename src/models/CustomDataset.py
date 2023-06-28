@@ -5,7 +5,7 @@ from config import get_config
 import json
 import numpy as np
 import random
-import utils  
+import utils
 
 
 class CustomDataset(Dataset):
@@ -37,12 +37,12 @@ class CustomDataset(Dataset):
 
     def __getitem__(self, index):
         image = Image.open(f"{self.images_path}/{self.instances[index]['image_name']}")
-        bbox = self.instances[index]["bbox"]
+        bbox = torch.tensor(self.instances[index]["bbox"])
         if self.transform:
             image = self.transform(image).to(get_config()["device"])
         sentences = self.instances[index]["sentences"]
         idx = np.random.randint(len(sentences))
         random_sentence = sentences[idx]
         category_id = self.instances[index]["category_id"]
-        embedding = utils.encode_data_with_clip(self.clip, image.unsqueeze(0), random_sentence)
+        embedding = utils.encode_data_with_clip(self.clip, image, random_sentence)
         return embedding, bbox, category_id
