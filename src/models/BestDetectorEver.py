@@ -61,6 +61,7 @@ def training_step(net, data_loader, optimizer, cost_function):
     net.train()
 
     # iterate over the training set
+    optimizer.zero_grad()
     for embeddings, bboxes, category_id in data_loader:
         counter += 1
         print("Batch: ", counter)
