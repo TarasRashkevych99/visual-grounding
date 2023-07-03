@@ -77,8 +77,8 @@ def encode_data_with_clip(clip_model, image, text):
         )
         text_z = clip_model.encode_text(text_tokens).float().to(get_config()["device"])
 
-    image_z /= image_z.norm(dim=-1, keepdim=True)
-    text_z /= text_z.norm(dim=-1, keepdim=True)
+    # image_z /= image_z.norm(dim=-1, keepdim=True)
+    # text_z /= text_z.norm(dim=-1, keepdim=True)
     return torch.mm(image_z.T, text_z)
 
 
