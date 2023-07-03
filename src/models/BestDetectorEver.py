@@ -64,6 +64,7 @@ def training_step(net, data_loader, optimizer, cost_function):
     net.train()
 
     # iterate over the training set
+    optimizer.zero_grad()
     for embeddings, bboxes, category_id in data_loader:
         counter += 1
         print("Batch: ", counter)
@@ -75,7 +76,7 @@ def training_step(net, data_loader, optimizer, cost_function):
 
         # loss computation
         loss = cost_function(outputs, bboxes)
-
+        print("Loss: ", loss)
         # backward pass
         loss.backward()
 
