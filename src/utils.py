@@ -79,6 +79,16 @@ def encode_data_with_clip(clip_model, image, text):
 
     image_z /= image_z.norm(dim=-1, keepdim=True)
     text_z /= text_z.norm(dim=-1, keepdim=True)
+    # image_z_stack = image_z.expand(50, -1)
+    # text_z_stack = text_z.expand(50, -1)
+    # plt.subplot(2, 1, 1)
+    # plt.imshow(image_z_stack.cpu().numpy(), cmap="gray")
+    # plt.subplot(2, 1, 2)
+    # plt.imshow(text_z_stack.cpu().numpy(), cmap="gray")
+    # plt.show()
+    # plt.figure()
+    # plt.imshow(torch.mm(image_z.T, text_z).cpu().numpy(), cmap="gray")
+    # plt.show()
     return torch.mm(image_z.T, text_z)
 
 

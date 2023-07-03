@@ -42,11 +42,13 @@ if __name__ == "__main__":
     #     iou_threshold=0.5, prob_threshold=0.5, dataset_dim=len(val_dataset)
     # )
 
+    indeces = list(range(100))
+
     best_detector_ever = BestDetectorEver()
 
-    train_loader = torch.utils.data.DataLoader(train_dataset, 64, shuffle=True)
-    val_loader = torch.utils.data.DataLoader(val_dataset, 64, shuffle=True)
-    test_loader = torch.utils.data.DataLoader(test_dataset, 64, shuffle=False)
+    train_loader = torch.utils.data.DataLoader(train_dataset, 64, shuffle=False, drop_last=True, sampler=torch.utils.data.SubsetRandomSampler(indeces))
+    val_loader = torch.utils.data.DataLoader(val_dataset, 64, shuffle=True, drop_last=True)
+    test_loader = torch.utils.data.DataLoader(test_dataset, 64, shuffle=False , drop_last=True)
 
     # writer = SummaryWriter(log_dir="runs/exp1")
 
@@ -62,8 +64,8 @@ if __name__ == "__main__":
     # computes evaluation results before training
     print("Before training:")
     train_loss, train_accuracy = test_step(net, train_loader, cost_function)
-    val_loss, val_accuracy = test_step(net, val_loader, cost_function)
-    test_loss, test_accuracy = test_step(net, test_loader, cost_function)
+    #val_loss, val_accuracy = test_step(net, val_loader, cost_function)
+    #test_loss, test_accuracy = test_step(net, test_loader, cost_function)
 
     # log to TensorBoard
     # log_values(writer, -1, train_loss, train_accuracy, "train")
@@ -75,13 +77,13 @@ if __name__ == "__main__":
             train_loss, train_accuracy
         )
     )
-    print(
-        "\tValidation loss {:.5f}, Validation accuracy {:.2f}".format(
-            val_loss, val_accuracy
-        )
-    )
-    print("\tTest loss {:.5f}, Test accuracy {:.2f}".format(test_loss, test_accuracy))
-    print("-----------------------------------------------------")
+    # print(
+    #     "\tValidation loss {:.5f}, Validation accuracy {:.2f}".format(
+    #         val_loss, val_accuracy
+    #     )
+    # )
+    # print("\tTest loss {:.5f}, Test accuracy {:.2f}".format(test_loss, test_accuracy))
+    # print("-----------------------------------------------------")
 
     # for each epoch, train the network and then compute evaluation results
     for e in range(epochs):

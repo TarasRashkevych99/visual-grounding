@@ -6,6 +6,7 @@ import json
 import numpy as np
 import random
 import utils
+import clip
 
 
 class CustomDataset(Dataset):
@@ -40,9 +41,10 @@ class CustomDataset(Dataset):
         bbox = torch.tensor(self.instances[index]["bbox"])
         if self.transform:
             image = self.transform(image).to(get_config()["device"])
-        sentences = self.instances[index]["sentences"]
+        sentences = self.instances[index+10]["sentences"]
         idx = np.random.randint(len(sentences))
         random_sentence = sentences[idx]
+        #random_sentence = clip.tokenize(random_sentence)).to(get_config()["device"])
         category_id = self.instances[index]["category_id"]
         embedding = utils.encode_data_with_clip(self.clip, image, random_sentence)
-        return embedding, bbox, category_id
+        return image, random_sentence, bbox, category_id

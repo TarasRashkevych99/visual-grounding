@@ -74,6 +74,9 @@ class Metrics:
             return iou
         else:
             return 0.0
+        
+    def _compute_grounding_accuracy(self, categories):
+        pass
 
     def compute_final_iou(self):
         self.iou = self.iou / self.dataset_dim

@@ -1,6 +1,9 @@
 import torch
 import torch.nn as nn
 
+import numpy as np
+import matplotlib.pyplot as plt
+
 from config import get_config
 
 
@@ -112,18 +115,47 @@ def test_step(net, data_loader, cost_function):
             bboxes = bboxes.to(get_config()["device"])
             # forward pass
             outputs = net(embeddings)
+            for e in embeddings:
+                e = e.squeeze(0)
+                e = e.cpu().numpy()
+                # print("Max: ", np.max(e))
+                # print("Min: ", np.min(e))
+                # print("Shape: ", e.shape)
+                # normalized_array = (e - np.min(e)) / (np.max(e) - np.min(e))
+                # print("Max: ", np.max(normalized_array))
+                # print("Min: ", np.min(normalized_array))
+                # print("Shape: ", normalized_array.shape)
+                # plt.imshow(e, cmap='gray')
+                # plt.show()
+
+
+            print("Predicted: ", outputs)
+
+            for i in range(len(outputs)):
+                print("Predicted: ", outputs[i])
+                print("Ground Truth: ", bboxes[i])
+                iou = compute_iou(outputs[i], bboxes[i])
+                print("IOU: ", iou)
 
             # loss computation
             loss = cost_function(outputs, bboxes)
 
+            print("Loss: ", loss)
+
             # fetch prediction and loss value
             samples += embeddings.shape[0]
+
+            print("Samples: ", samples)
             cumulative_loss += loss.item()
             # Note: the .item() is needed to extract scalars from tensors
             predicted = outputs
 
+
+
             # compute accuracy
             localization_accuracy += sum([compute_iou(pred, bboxes[index]) for index, pred in enumerate(predicted)])
+
+            print("Localization Accuracy: ", localization_accuracy)
 
     return cumulative_loss / samples, localization_accuracy / samples * 100
 
