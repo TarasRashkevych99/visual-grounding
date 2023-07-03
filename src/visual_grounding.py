@@ -51,7 +51,7 @@ if __name__ == "__main__":
     # writer = SummaryWriter(log_dir="runs/exp1")
 
     # instantiate the network and move it to the chosen device (GPU)
-    net = BestDetectorEver().to(device)
+    net = BestDetectorEver().to(get_config()["device"])
 
     # instantiate the optimizer
     optimizer = get_optimizer(net, learning_rate, weight_decay, momentum)
