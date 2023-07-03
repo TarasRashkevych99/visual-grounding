@@ -13,16 +13,19 @@ class BestDetectorEver(nn.Module):
             nn.Conv2d(
                 1, 16, kernel_size=3, stride=1, padding=1
             ),  # Output: 16 x 256 x 256
+            nn.BatchNorm2d(16),
             nn.ReLU(),
             nn.AvgPool2d(kernel_size=2, stride=2),  # Output: 16 x 128 x 128
             nn.Conv2d(
                 16, 32, kernel_size=3, stride=1, padding=1
             ),  # Output: 32 x 128 x 128
+            nn.BatchNorm2d(32),
             nn.ReLU(),
             nn.AvgPool2d(kernel_size=2, stride=2),  # Output: 32 x 64 x 64
             nn.Conv2d(
                 32, 64, kernel_size=3, stride=1, padding=1
             ),  # Output: 64 x 64 x 64
+            nn.BatchNorm2d(64),
             nn.ReLU(),
             nn.AvgPool2d(kernel_size=2, stride=2),  # Output: 64 x 32 x 32
             nn.Flatten(),
