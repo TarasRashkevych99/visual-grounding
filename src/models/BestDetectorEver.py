@@ -58,6 +58,7 @@ def training_step(net, data_loader, optimizer, cost_function):
         # load data into GPU
         #embeddings = embeddings.to(get_config()["device"]).unsqueeze(1)
         bboxes = bboxes.to(get_config()["device"])
+        images = images.to(get_config()["device"])
         # forward pass
         outputs = net(images).to(get_config()["device"])
 
