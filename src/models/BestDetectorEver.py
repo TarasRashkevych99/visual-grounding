@@ -58,8 +58,6 @@ def training_step(net, data_loader, optimizer, cost_function):
         # load data into GPU
         #embeddings = embeddings.to(get_config()["device"]).unsqueeze(1)
         bboxes = bboxes.to(get_config()["device"])
-        # Convert images to half precision
-        images = images.half()
         # forward pass
         outputs = net(images).to(get_config()["device"])
 
@@ -151,4 +149,4 @@ def get_clip_visual_model():
     clip_vision_model = clip_model.visual
     layers = list(clip_vision_model.children())
     vision_model = nn.Sequential(*layers[:-1])
-    return vision_model
+    return vision_model.float().to(get_config()["device"])
