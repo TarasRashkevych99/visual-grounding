@@ -72,7 +72,7 @@ def training_step(net, data_loader, optimizer, cost_function):
 
         # loss computation
         loss = cost_function(outputs, bboxes)
-
+        print("Loss: ", loss)
         # backward pass
         loss.backward()
 
