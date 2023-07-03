@@ -13,6 +13,7 @@ class BestDetectorEver(nn.Module):
 
         self.best_detector = nn.Sequential(
             nn.Conv2d(2048, 1024, kernel_size=4, stride=4), 
+            nn.BatchNorm2d(1024),
             nn.Flatten(),
             nn.Linear(1024, 256),
             nn.ReLU(),
