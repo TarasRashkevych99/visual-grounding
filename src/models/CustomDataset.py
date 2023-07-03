@@ -6,6 +6,7 @@ import json
 import numpy as np
 import random
 import utils
+import clip
 
 
 class CustomDataset(Dataset):
@@ -43,6 +44,7 @@ class CustomDataset(Dataset):
         sentences = self.instances[index]["sentences"]
         idx = np.random.randint(len(sentences))
         random_sentence = sentences[idx]
+        random_sentence = clip.tokenize(random_sentence).to(get_config()["device"])
         category_id = self.instances[index]["category_id"]
-        embedding = utils.encode_data_with_clip(self.clip, image, random_sentence)
-        return embedding, bbox, category_id
+        #embedding = utils.encode_data_with_clip(self.clip, image, random_sentence)
+        return image, random_sentence, bbox, category_id

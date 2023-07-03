@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import clip
 
 from config import get_config
 
@@ -8,37 +9,25 @@ class BestDetectorEver(nn.Module):
     def __init__(self):
         super().__init__()
 
+        self.clip_vision_model = get_clip_visual_model()
+
         self.best_detector = nn.Sequential(
-            nn.AvgPool2d(kernel_size=4, stride=4),  # Output: 16 x 512 x 512
-            nn.Conv2d(
-                1, 16, kernel_size=3, stride=1, padding=1
-            ),  # Output: 16 x 256 x 256
-            nn.ReLU(),
-            nn.AvgPool2d(kernel_size=2, stride=2),  # Output: 16 x 128 x 128
-            nn.Conv2d(
-                16, 32, kernel_size=3, stride=1, padding=1
-            ),  # Output: 32 x 128 x 128
-            nn.ReLU(),
-            nn.AvgPool2d(kernel_size=2, stride=2),  # Output: 32 x 64 x 64
-            nn.Conv2d(
-                32, 64, kernel_size=3, stride=1, padding=1
-            ),  # Output: 64 x 64 x 64
-            nn.ReLU(),
-            nn.AvgPool2d(kernel_size=2, stride=2),  # Output: 64 x 32 x 32
+            nn.Conv2d(2048, 1024, kernel_size=4, stride=4), 
             nn.Flatten(),
-            nn.Linear(64 * 32 * 32, 32),  # Input: 64 * 128 * 128, Output: 128
-            nn.ReLU(),
-            nn.Linear(32, 4),  # Input: 128, Output: 10 (Assuming 10 output classes)
+            nn.Linear(1024, 256),
+            nn.Linear(256, 64),
+            nn.Linear(64, 4)
         )
 
     def forward(self, x):
+        x = self.clip_vision_model(x)
         x = self.best_detector(x)
         return x
 
 
 def get_optimizer(model, lr, wd, momentum):
     optimizer = torch.optim.SGD(
-        [{"params": model.parameters(), "lr": lr}],
+        [{"params": model.best_detector.parameters(), "lr": lr}],
         lr=lr / 10,
         weight_decay=wd,
         momentum=momentum,
@@ -61,20 +50,22 @@ def training_step(net, data_loader, optimizer, cost_function):
     net.train()
 
     # iterate over the training set
-    for embeddings, bboxes, category_id in data_loader:
+    for images, texts, bboxes, category_id in data_loader:
         counter += 1
         print("Batch: ", counter)
         # load data into GPU
-        embeddings = embeddings.to(get_config()["device"]).unsqueeze(1)
+        #embeddings = embeddings.to(get_config()["device"]).unsqueeze(1)
         bboxes = bboxes.to(get_config()["device"])
         # forward pass
-        outputs = net(embeddings)
+        outputs = net(images)
 
         # loss computation
         loss = cost_function(outputs, bboxes)
 
         # backward pass
         loss.backward()
+
+        print("Loss: ", loss)
 
         # parameters update
         optimizer.step()
@@ -83,7 +74,7 @@ def training_step(net, data_loader, optimizer, cost_function):
         optimizer.zero_grad()
 
         # fetch prediction and loss value
-        samples += embeddings.shape[0]
+        samples += images.shape[0]
         cumulative_loss += loss.item()
         predicted = outputs
 
@@ -104,20 +95,20 @@ def test_step(net, data_loader, cost_function):
     # disable gradient computation (we are only testing, we do not want our model to be modified in this step!)
     with torch.no_grad():
         # iterate over the test set
-        for embeddings, bboxes, category_id in data_loader:
+        for images, texts, bboxes, category_id in data_loader:
             counter += 1
             print("Batch: ", counter)
             # load data into GPU
-            embeddings = embeddings.to(get_config()["device"]).unsqueeze(1)
+            #embeddings = embeddings.to(get_config()["device"]).unsqueeze(1)
             bboxes = bboxes.to(get_config()["device"])
             # forward pass
-            outputs = net(embeddings)
+            outputs = net(images)
 
             # loss computation
             loss = cost_function(outputs, bboxes)
 
             # fetch prediction and loss value
-            samples += embeddings.shape[0]
+            samples += images.shape[0]
             cumulative_loss += loss.item()
             # Note: the .item() is needed to extract scalars from tensors
             predicted = outputs
@@ -150,3 +141,10 @@ def compute_iou(predicted_box, ground_box):
         return iou
     else:
         return 0.0
+
+def get_clip_visual_model():
+    clip_model, _ = clip.load("RN50")
+    clip_vision_model = clip_model.visual
+    layers = list(clip_vision_model.children())
+    vision_model = nn.Sequential(*layers[:-1])
+    return vision_model
