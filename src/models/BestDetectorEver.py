@@ -69,7 +69,7 @@ class BestDetectorEver(nn.Module):
 
 def get_optimizer(model, lr, wd, momentum):
     optimizer = torch.optim.SGD(
-        [{"params": model.parameters()}],
+        model.parameters(),
         lr=lr / 10,
         weight_decay=wd,
         momentum=momentum,
