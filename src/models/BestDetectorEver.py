@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import clip
+import math
 
 from config import get_config
 
@@ -9,7 +10,9 @@ class BestDetectorEver(nn.Module):
     def __init__(self):
         super().__init__()
 
-        self.clip_vision_model = get_clip_visual_model()
+        self.clip_vision_model, self.clip_text_model = get_clip_model()
+
+        #self.positional_embedding = self._create_positional_encoding()
 
         self.best_detector = nn.Sequential(
             nn.Conv2d(2048, 1024, kernel_size=4, stride=4), 
@@ -22,20 +25,49 @@ class BestDetectorEver(nn.Module):
             nn.Linear(64, 4)
         )
 
-    def forward(self, x):
-        x = self.clip_vision_model(x)
-        x = self.best_detector(x)
-        return x
+        self.reduce_dimensionality = nn.Sequential(
+            nn.BatchNorm2d(2048),
+            nn.Conv2d(2048, 1024, kernel_size=4, stride=4),
+            nn.Flatten(),
+        )
+
+        self.bbox_regression = nn.Sequential(
+            nn.BatchNorm1d(2048),
+            nn.Linear(2048, 512),
+            nn.ReLU(),
+            nn.Dropout(0.5),
+            nn.Linear(512, 128),
+            nn.ReLU(),
+            nn.Dropout(0.5),
+            nn.Linear(128, 4),
+        )
+
+    def forward(self, images, texts):
+        images = self.clip_vision_model(images)
+        texts = self.clip_text_model(texts)
+        images = self.reduce_dimensionality(images)
+        embeddings = torch.cat((images, texts), dim=1)
+        bbox = self.bbox_regression(embeddings)
+        return bbox
+    
+    def _create_positional_encoding(self):
+        # Create positional encodings for sequence length
+        pe = torch.zeros(self.sequence_length, self.input_dim)
+        position = torch.arange(0, self.sequence_length, dtype=torch.float).unsqueeze(1)
+        div_term = torch.exp(torch.arange(0, self.input_dim, 2).float() * (-math.log(10000.0) / self.input_dim))
+        pe[:, 0::2] = torch.sin(position * div_term)
+        pe[:, 1::2] = torch.cos(position * div_term)
+
+        return pe
 
 
 def get_optimizer(model, lr, wd, momentum):
     optimizer = torch.optim.SGD(
-        [{"params": model.best_detector.parameters(), "lr": lr}],
+        [{"params": model.reduce_dimensionality.parameters(), "lr": lr}, {"params": model.bbox_regression.parameters(), "lr": lr}],
         lr=lr / 10,
         weight_decay=wd,
         momentum=momentum,
     )
-
     return optimizer
 
 
@@ -60,7 +92,7 @@ def training_step(net, data_loader, optimizer, cost_function):
         #embeddings = embeddings.to(get_config()["device"]).unsqueeze(1)
         bboxes = bboxes.to(get_config()["device"])
         # forward pass
-        outputs = net(images).to(get_config()["device"])
+        outputs = net(images, texts).to(get_config()["device"])
 
         # loss computation
         loss = cost_function(outputs, bboxes)
@@ -105,7 +137,7 @@ def test_step(net, data_loader, cost_function):
             #embeddings = embeddings.to(get_config()["device"]).unsqueeze(1)
             bboxes = bboxes.to(get_config()["device"])
             # forward pass
-            outputs = net(images)
+            outputs = net(images, texts)
 
             # loss computation
             loss = cost_function(outputs, bboxes)
@@ -145,9 +177,10 @@ def compute_iou(predicted_box, ground_box):
     else:
         return 0.0
 
-def get_clip_visual_model():
+def get_clip_model():
     clip_model, _ = clip.load("RN50")
     clip_vision_model = clip_model.visual
     layers = list(clip_vision_model.children())
     vision_model = nn.Sequential(*layers[:-1])
-    return vision_model.float().to(get_config()["device"])
+    return vision_model.float().to(get_config()["device"]), clip_model.encode_text
+

@@ -22,7 +22,7 @@ def log_values(writer, step, loss, accuracy, prefix):
 if __name__ == "__main__":
     device = get_config()["device"]
 
-    learning_rate = 0.01
+    learning_rate = 0.001
     weight_decay = 0.000001
     momentum = 0.9
     epochs = 10
@@ -44,9 +44,9 @@ if __name__ == "__main__":
 
     best_detector_ever = BestDetectorEver()
 
-    train_loader = torch.utils.data.DataLoader(train_dataset, 64, shuffle=True)
-    val_loader = torch.utils.data.DataLoader(val_dataset, 64, shuffle=True)
-    test_loader = torch.utils.data.DataLoader(test_dataset, 64, shuffle=False)
+    train_loader = torch.utils.data.DataLoader(train_dataset, 64, shuffle=True, drop_last=True)
+    val_loader = torch.utils.data.DataLoader(val_dataset, 64, shuffle=False, drop_last=True)
+    test_loader = torch.utils.data.DataLoader(test_dataset, 64, shuffle=False, drop_last=True)
 
     # writer = SummaryWriter(log_dir="runs/exp1")
 
