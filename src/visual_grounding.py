@@ -22,7 +22,7 @@ def log_values(writer, step, loss, accuracy, prefix):
 if __name__ == "__main__":
     device = get_config()["device"]
 
-    learning_rate = 0.1
+    learning_rate = 0.01
     weight_decay = 0.000001
     momentum = 0.9
     epochs = 10
@@ -61,27 +61,27 @@ if __name__ == "__main__":
 
     # computes evaluation results before training
     print("Before training:")
-    train_loss, train_accuracy = test_step(net, train_loader, cost_function)
-    val_loss, val_accuracy = test_step(net, val_loader, cost_function)
-    test_loss, test_accuracy = test_step(net, test_loader, cost_function)
+    # train_loss, train_accuracy = test_step(net, train_loader, cost_function)
+    # val_loss, val_accuracy = test_step(net, val_loader, cost_function)
+    # test_loss, test_accuracy = test_step(net, test_loader, cost_function)
 
     # log to TensorBoard
     # log_values(writer, -1, train_loss, train_accuracy, "train")
     # log_values(writer, -1, val_loss, val_accuracy, "validation")
     # log_values(writer, -1, test_loss, test_accuracy, "test")
 
-    print(
-        "\tTraining loss {:.5f}, Training accuracy {:.2f}".format(
-            train_loss, train_accuracy
-        )
-    )
-    print(
-        "\tValidation loss {:.5f}, Validation accuracy {:.2f}".format(
-            val_loss, val_accuracy
-        )
-    )
-    print("\tTest loss {:.5f}, Test accuracy {:.2f}".format(test_loss, test_accuracy))
-    print("-----------------------------------------------------")
+    # print(
+    #     "\tTraining loss {:.5f}, Training accuracy {:.2f}".format(
+    #         train_loss, train_accuracy
+    #     )
+    # )
+    # print(
+    #     "\tValidation loss {:.5f}, Validation accuracy {:.2f}".format(
+    #         val_loss, val_accuracy
+    #     )
+    # )
+    # print("\tTest loss {:.5f}, Test accuracy {:.2f}".format(test_loss, test_accuracy))
+    # print("-----------------------------------------------------")
 
     # for each epoch, train the network and then compute evaluation results
     for e in range(epochs):
