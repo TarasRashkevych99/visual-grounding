@@ -44,7 +44,7 @@ class BestDetectorEver(nn.Module):
 
     def forward(self, images, texts):
         images = self.clip_vision_model(images)
-        texts = self.clip_text_model(texts).float().to(get_config()["device"])
+        texts = self.clip_text_model(texts.float())
         images = self.reduce_dimensionality(images)
         embeddings = torch.cat((images, texts), dim=1)
         bbox = self.bbox_regression(embeddings)
