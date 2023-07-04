@@ -46,7 +46,7 @@ class BestDetectorEver(nn.Module):
         print(images.dtype)
         images = self.clip_vision_model(images)
         print(images.dtype)
-        print(texts.float())
+        texts = texts.float()
         print(texts.dtype)
         texts = self.clip_text_model(texts)
         print(texts.dtype)
