@@ -22,7 +22,7 @@ def log_values(writer, step, loss, accuracy, prefix):
 if __name__ == "__main__":
     device = get_config()["device"]
 
-    learning_rate = 0.0001
+    learning_rate = 0.01
     weight_decay = 0.000001
     momentum = 0.9
     epochs = 10
