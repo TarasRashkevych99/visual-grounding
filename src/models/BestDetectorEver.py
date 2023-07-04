@@ -10,7 +10,10 @@ class BestDetectorEver(nn.Module):
     def __init__(self):
         super().__init__()
 
-        self.clip_vision_model, self.clip_text_model = get_clip_model()
+        self.clip_vision_model = get_clip_model()
+
+        clip_model, _ = clip.load("RN50")
+        self.clip_text_model = clip_model.encode_text
 
         #self.positional_embedding = self._create_positional_encoding()
 
@@ -182,5 +185,5 @@ def get_clip_model():
     clip_vision_model = clip_model.visual
     layers = list(clip_vision_model.children())
     vision_model = nn.Sequential(*layers[:-1])
-    return vision_model.float().to(get_config()["device"]), clip_model.encode_text
+    return vision_model.float().to(get_config()["device"])
 
