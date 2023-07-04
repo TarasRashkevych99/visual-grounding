@@ -43,18 +43,12 @@ class BestDetectorEver(nn.Module):
         )
 
     def forward(self, images, texts):
-        print(images.dtype)
         images = self.clip_vision_model(images)
-        print(images.dtype)
-        texts = texts.float()
-        print(texts.dtype)
         texts = self.clip_text_model(texts)
-        print(texts.dtype)
-        # images = self.reduce_dimensionality(images)
-        # embeddings = torch.cat((images, texts), dim=1)
-        # bbox = self.bbox_regression(embeddings)
-        # return bbox
-        return None
+        images = self.reduce_dimensionality(images)
+        embeddings = torch.cat((images, texts), dim=1)
+        bbox = self.bbox_regression(embeddings)
+        return bbox
     
     def _create_positional_encoding(self):
         # Create positional encodings for sequence length
