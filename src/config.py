@@ -10,7 +10,7 @@ def get_config():
     refs_path = f"{annotations_path}/refs(umd).p"
     instances_path = f"{annotations_path}/instances.json"
     images_path = f"{dataset_root}/images"
-    device = "cuda:0" if torch.cuda.is_available() else "cpu"
+    device = "cpu"
 
     config = {
         "project_root": project_root,
