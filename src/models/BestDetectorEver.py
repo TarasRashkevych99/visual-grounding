@@ -12,21 +12,24 @@ class BestDetectorEver(nn.Module):
 
         self.clip_vision_model = get_clip_model()
 
+        for param in self.clip_vision_model.parameters():
+            param.requires_grad = False
+
         clip_model, _ = clip.load("RN50")
         self.clip_text_model = clip_model.encode_text
 
         #self.positional_embedding = self._create_positional_encoding()
 
-        self.best_detector = nn.Sequential(
-            nn.Conv2d(2048, 1024, kernel_size=4, stride=4), 
-            nn.BatchNorm2d(1024),
-            nn.Flatten(),
-            nn.Linear(1024, 256),
-            nn.ReLU(),
-            nn.Linear(256, 64),
-            nn.ReLU(),
-            nn.Linear(64, 4)
-        )
+        # self.best_detector = nn.Sequential(
+        #     nn.Conv2d(2048, 1024, kernel_size=4, stride=4), 
+        #     nn.BatchNorm2d(1024),
+        #     nn.Flatten(),
+        #     nn.Linear(1024, 256),
+        #     nn.ReLU(),
+        #     nn.Linear(256, 64),
+        #     nn.ReLU(),
+        #     nn.Linear(64, 4)
+        # )
 
         self.reduce_dimensionality = nn.Sequential(
             nn.BatchNorm2d(2048),
@@ -66,7 +69,7 @@ class BestDetectorEver(nn.Module):
 
 def get_optimizer(model, lr, wd, momentum):
     optimizer = torch.optim.SGD(
-        [{"params": model.reduce_dimensionality.parameters(), "lr": lr}, {"params": model.bbox_regression.parameters(), "lr": lr}],
+        [{"params": model.parameters()}],
         lr=lr / 10,
         weight_decay=wd,
         momentum=momentum,
