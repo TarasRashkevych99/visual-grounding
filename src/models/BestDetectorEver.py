@@ -137,7 +137,7 @@ def test_step(net, data_loader, cost_function):
             #embeddings = embeddings.to(get_config()["device"]).unsqueeze(1)
             bboxes = bboxes.to(get_config()["device"])
             # forward pass
-            outputs = net(images, texts)
+            outputs = net(images, texts).to(get_config()["device"])
 
             # loss computation
             loss = cost_function(outputs, bboxes)
