@@ -182,5 +182,5 @@ def get_clip_model():
     clip_vision_model = clip_model.visual
     layers = list(clip_vision_model.children())
     vision_model = nn.Sequential(*layers[:-1])
-    return vision_model.float().to(get_config()["device"]), clip_model.encode_text
+    return vision_model.to(get_config()["device"]), clip_model.encode_text
 
