@@ -18,19 +18,6 @@ class BestDetectorEver(nn.Module):
         clip_model, _ = clip.load("RN50")
         self.clip_text_model = clip_model.encode_text
 
-        #self.positional_embedding = self._create_positional_encoding()
-
-        # self.best_detector = nn.Sequential(
-        #     nn.Conv2d(2048, 1024, kernel_size=4, stride=4), 
-        #     nn.BatchNorm2d(1024),
-        #     nn.Flatten(),
-        #     nn.Linear(1024, 256),
-        #     nn.ReLU(),
-        #     nn.Linear(256, 64),
-        #     nn.ReLU(),
-        #     nn.Linear(64, 4)
-        # )
-
         self.reduce_dimensionality = nn.Sequential(
             nn.BatchNorm2d(2048),
             nn.Conv2d(2048, 1024, kernel_size=4, stride=4),
