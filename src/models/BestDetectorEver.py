@@ -65,7 +65,6 @@ def get_optimizer(model, lr, wd, momentum):
         model.parameters(),
         lr=lr,
         weight_decay=wd,
-        momentum=momentum,
     )
     return optimizer
 
