@@ -68,9 +68,15 @@ class BestDetectorEver(nn.Module):
 
 
 def get_optimizer(model, lr, wd, momentum):
-    optimizer = torch.optim.SGD(
+    # optimizer = torch.optim.SGD(
+    #     model.parameters(),
+    #     lr=lr / 10,
+    #     weight_decay=wd,
+    #     momentum=momentum,
+    # )
+    optimizer = torch.optim.Adam(
         model.parameters(),
-        lr=lr / 10,
+        lr=lr,
         weight_decay=wd,
         momentum=momentum,
     )
@@ -78,7 +84,8 @@ def get_optimizer(model, lr, wd, momentum):
 
 
 def get_cost_function():
-    cost_function = torch.nn.MSELoss()
+    #cost_function = torch.nn.MSELoss()
+    cost_function = torch.nn.L1Loss()
     return cost_function
 
 
