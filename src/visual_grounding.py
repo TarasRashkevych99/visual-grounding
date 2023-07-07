@@ -133,4 +133,4 @@ if __name__ == "__main__":
     # closes the logger
     # writer.close()
 
-    torch.save(net.state_dict(), '.best-ever.pt')
+    torch.save(net.state_dict(), 'best-ever.pt')
