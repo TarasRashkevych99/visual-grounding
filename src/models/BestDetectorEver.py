@@ -71,8 +71,7 @@ def get_optimizer(model, lr, wd, momentum):
 
 
 def get_cost_function():
-    #cost_function = torch.nn.MSELoss()
-    cost_function = torch.nn.L1Loss()
+    cost_function = torch.nn.MSELoss()
     return cost_function
 
 
