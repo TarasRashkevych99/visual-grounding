@@ -70,18 +70,18 @@ if __name__ == "__main__":
     # log_values(writer, -1, val_loss, val_accuracy, "validation")
     # log_values(writer, -1, test_loss, test_accuracy, "test")
 
-    # print(
-    #     "\tTraining loss {:.5f}, Training accuracy {:.2f}".format(
-    #         train_loss, train_accuracy
-    #     )
-    # )
-    # print(
-    #     "\tValidation loss {:.5f}, Validation accuracy {:.2f}".format(
-    #         val_loss, val_accuracy
-    #     )
-    # )
-    # print("\tTest loss {:.5f}, Test accuracy {:.2f}".format(test_loss, test_accuracy))
-    # print("-----------------------------------------------------")
+    print(
+        "\tTraining loss {:.5f}, Training accuracy {:.2f}".format(
+            train_loss, train_accuracy
+        )
+    )
+    print(
+        "\tValidation loss {:.5f}, Validation accuracy {:.2f}".format(
+            val_loss, val_accuracy
+        )
+    )
+    print("\tTest loss {:.5f}, Test accuracy {:.2f}".format(test_loss, test_accuracy))
+    print("-----------------------------------------------------")
 
     # for each epoch, train the network and then compute evaluation results
     for e in range(epochs):
