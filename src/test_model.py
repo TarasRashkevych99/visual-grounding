@@ -9,7 +9,7 @@ clip_model, preprocess = clip.load("RN50")
 test_set = CustomDataset(split="test", model=clip_model, transform=preprocess)
 
 model = BestDetectorEver()
-#model.load_state_dict(torch.load("best_detector_ever.pt"))
+model.load_state_dict(torch.load("best-ever.pt", map_location=torch.device('cpu')))
 model.eval()
 
 with torch.no_grad():
