@@ -33,6 +33,7 @@ class BestDetectorEver(nn.Module):
             nn.ReLU(),
             nn.Dropout(0.5),
             nn.Linear(128, 4),
+            nn.Sigmoid(),
         )
 
     def forward(self, images, texts):

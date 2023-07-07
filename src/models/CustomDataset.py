@@ -7,6 +7,7 @@ import numpy as np
 import random
 import utils
 import clip
+from torchvision import transforms
 
 
 class CustomDataset(Dataset):
@@ -28,6 +29,7 @@ class CustomDataset(Dataset):
             self.instances = list(
                 json.load(open(f"{self.annotations_path}/instances_test.json")).values()
             )
+        self.instances = self.instances[:64]
         self.images_path = get_config()["images_path"]
         self.transform = transform
         if shuffle:
@@ -38,7 +40,11 @@ class CustomDataset(Dataset):
 
     def __getitem__(self, index):
         image = Image.open(f"{self.images_path}/{self.instances[index]['image_name']}")
-        bbox = torch.tensor(self.instances[index]["bbox"])
+        bbox = self.instances[index]["bbox"]
+        width, height = image.size
+        bbox = self._normalize_bbox(bbox, width, height).to(get_config()["device"])
+        image = image.resize((224,224))
+
         if self.transform:
             image = self.transform(image).to(get_config()["device"])
         sentences = self.instances[index]["sentences"]
@@ -47,4 +53,8 @@ class CustomDataset(Dataset):
         random_sentence = clip.tokenize(random_sentence).to(get_config()["device"])
         category_id = self.instances[index]["category_id"]
         #embedding = utils.encode_data_with_clip(self.clip, image, random_sentence)
-        return image, random_sentence.squeeze(0), bbox, category_id
+        return image, random_sentence, bbox, category_id
+    
+    def _normalize_bbox(self, bbox, width, height):
+        x, y, w, h = bbox
+        return torch.tensor([x / width, y / height, w / width, h / height])
