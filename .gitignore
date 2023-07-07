@@ -163,7 +163,7 @@ cython_debug/
 runs/**
 
 #Yolo models
-yolov8*.pt
+*.pt
 
 #Datasets
 datasets/**
