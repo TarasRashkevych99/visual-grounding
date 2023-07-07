@@ -20,8 +20,10 @@ class BestDetectorEver(nn.Module):
 
         self.reduce_dimensionality = nn.Sequential(
             nn.BatchNorm2d(2048),
-            nn.Conv2d(2048, 1024, kernel_size=4, stride=4),
+            nn.AvgPool2d(kernel_size=2, stride=2),
+            #nn.Conv2d(2048, 1024, kernel_size=4, stride=4),
             nn.Flatten(),
+            nn.Linear(18432, 1024),
         )
 
         self.bbox_regression = nn.Sequential(

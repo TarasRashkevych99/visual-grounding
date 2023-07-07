@@ -44,7 +44,7 @@ if __name__ == "__main__":
 
     best_detector_ever = BestDetectorEver()
 
-    train_loader = torch.utils.data.DataLoader(train_dataset, 64, shuffle=True, drop_last=True)
+    train_loader = torch.utils.data.DataLoader(train_dataset, 64, shuffle=False, drop_last=True)
     val_loader = torch.utils.data.DataLoader(val_dataset, 64, shuffle=False, drop_last=True)
     test_loader = torch.utils.data.DataLoader(test_dataset, 64, shuffle=False, drop_last=True)
 
@@ -132,5 +132,9 @@ if __name__ == "__main__":
 
     # closes the logger
     # writer.close()
+
+    # Quantize the model
+    # torch.quantization.prepare(net, inplace=True)
+    # torch.quantization.convert(net, inplace=True)
 
     torch.save(net.state_dict(), 'best-ever.pt')
