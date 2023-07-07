@@ -156,6 +156,20 @@ def test_step(net, data_loader, cost_function):
 
 
 def compute_iou(predicted_box, ground_box):
+    x, y, w, h = predicted_box
+    x1 = x - w / 2
+    y1 = y - h / 2
+    x2 = x + w / 2
+    y2 = y + h / 2
+    predicted_box = [x1, y1, x2, y2]
+
+    x, y, w, h = ground_box
+    x1 = x - w / 2
+    y1 = y - h / 2
+    x2 = x + w / 2
+    y2 = y + h / 2
+    ground_box = [x1, y1, x2, y2]
+    
     # print(predicted_box)
     # print(ground_box)
     x1 = max(predicted_box[0], ground_box[0])
@@ -171,12 +185,8 @@ def compute_iou(predicted_box, ground_box):
     )
 
     # Calculate the IoU
-
-    if intersection_area > 0:
-        iou = intersection_area / float(box1_area + box2_area - intersection_area)
-        return iou
-    else:
-        return 0.0
+    iou = intersection_area / float(box1_area + box2_area - intersection_area)
+    return iou
 
 def get_clip_model():
     clip_model, _ = clip.load("RN50")

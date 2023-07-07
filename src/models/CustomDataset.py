@@ -29,7 +29,7 @@ class CustomDataset(Dataset):
             self.instances = list(
                 json.load(open(f"{self.annotations_path}/instances_test.json")).values()
             )
-        self.instances = self.instances
+        self.instances = self.instances[:64]
         self.images_path = get_config()["images_path"]
         self.transform = transform
         if shuffle:
@@ -41,6 +41,7 @@ class CustomDataset(Dataset):
     def __getitem__(self, index):
         image = Image.open(f"{self.images_path}/{self.instances[index]['image_name']}")
         bbox = self.instances[index]["bbox"]
+        box = (bbox[0] + (box[2] / 2), bbox[1] + (bbox[3] / 2), bbox[2], bbox[3])
         width, height = image.size
         bbox = self._normalize_bbox(bbox, width, height).to(get_config()["device"])
         image = image.resize((224,224))
