@@ -53,7 +53,7 @@ class CustomDataset(Dataset):
         random_sentence = clip.tokenize(random_sentence).to(get_config()["device"])
         category_id = self.instances[index]["category_id"]
         #embedding = utils.encode_data_with_clip(self.clip, image, random_sentence)
-        return image, random_sentence, bbox, category_id
+        return image, random_sentence.unsqueeze(0), bbox, category_id
     
     def _normalize_bbox(self, bbox, width, height):
         x, y, w, h = bbox
