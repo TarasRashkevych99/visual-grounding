@@ -25,7 +25,7 @@ if __name__ == "__main__":
     learning_rate = 0.001
     weight_decay = 0.000001
     momentum = 0.9
-    epochs = 40
+    epochs = 10
 
     clip_model, preprocess = clip.load("RN50")
     clip_model = clip_model.eval()
@@ -61,9 +61,9 @@ if __name__ == "__main__":
 
     # computes evaluation results before training
     print("Before training:")
-    # train_loss, train_accuracy = test_step(net, train_loader, cost_function)
-    # val_loss, val_accuracy = test_step(net, val_loader, cost_function)
-    # test_loss, test_accuracy = test_step(net, test_loader, cost_function)
+    train_loss, train_accuracy = test_step(net, train_loader, cost_function)
+    val_loss, val_accuracy = test_step(net, val_loader, cost_function)
+    test_loss, test_accuracy = test_step(net, test_loader, cost_function)
 
     # log to TensorBoard
     # log_values(writer, -1, train_loss, train_accuracy, "train")
@@ -95,12 +95,12 @@ if __name__ == "__main__":
 
         print("Epoch: {:d}".format(e + 1))
         print(
-            "\tTraining loss {:.5f}, Training accuracy {:.2f}".format(
+            "\tTraining loss during training{:.5f}, Training accuracy {:.2f}".format(
                 train_loss, train_accuracy
             )
         )
         print(
-            "\tValidation loss {:.5f}, Validation accuracy {:.2f}".format(
+            "\tValidation loss during training{:.5f}, Validation accuracy {:.2f}".format(
                 val_loss, val_accuracy
             )
         )
