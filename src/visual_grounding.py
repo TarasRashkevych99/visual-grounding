@@ -141,4 +141,4 @@ if __name__ == "__main__":
     # torch.quantization.prepare(net, inplace=True)
     # torch.quantization.convert(net, inplace=True)
 
-    torch.save(net.state_dict(), 'best-ever.pt')
+    torch.save(net.state_dict(), 'best-ever2.pt')

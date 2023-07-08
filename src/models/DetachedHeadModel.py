@@ -93,6 +93,8 @@ def training_step(net, data_loader, optimizer, cost_function):
         # load data into GPU
         #embeddings = embeddings.to(get_config()["device"]).unsqueeze(1)
         bboxes = bboxes.to(get_config()["device"])
+        # gradients reset
+        optimizer.zero_grad()
         # forward pass
         outputs = net(images, texts).to(get_config()["device"])
 
@@ -106,9 +108,6 @@ def training_step(net, data_loader, optimizer, cost_function):
 
         # parameters update
         optimizer.step()
-
-        # gradients reset
-        optimizer.zero_grad()
 
         # fetch prediction and loss value
         samples += images.shape[0]
