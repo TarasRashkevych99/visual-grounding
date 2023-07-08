@@ -75,9 +75,9 @@ if __name__ == "__main__":
     test_loss, test_accuracy = test_step(net, test_loader, cost_function)
 
     # log to TensorBoard
-    log_values(writer, -1, train_loss, train_accuracy, "train")
-    log_values(writer, -1, val_loss, val_accuracy, "validation")
-    log_values(writer, -1, test_loss, test_accuracy, "test")
+    log_values(writer, -1, train_loss, train_accuracy, "train before")
+    log_values(writer, -1, val_loss, val_accuracy, "validation before")
+    log_values(writer, -1, test_loss, test_accuracy, "test before")
 
     
     print(
@@ -119,9 +119,9 @@ if __name__ == "__main__":
     test_loss, test_accuracy = test_step(net, test_loader, cost_function)
 
     # log to TensorBoard
-    log_values(writer, epochs, train_loss, train_accuracy, "train")
-    log_values(writer, epochs, val_loss, val_accuracy, "validation")
-    log_values(writer, epochs, test_loss, test_accuracy, "test")
+    log_values(writer, epochs, train_loss, train_accuracy, "train after")
+    log_values(writer, epochs, val_loss, val_accuracy, "validation after")
+    log_values(writer, epochs, test_loss, test_accuracy, "test after")
 
     print(
         "\tTraining loss {:.5f}, Training accuracy {:.2f}".format(

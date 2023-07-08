@@ -173,4 +173,4 @@ refcocog/**
 .DS_Store
 
 #Runs folder
-runs/**
+**/runs/**
