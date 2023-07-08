@@ -11,11 +11,7 @@ class FullHeadModel(nn.Module):
         super().__init__()
 
         clip_model, _ = clip.load("RN50")
-        self.clip_vision_model = clip_model.visual.float().to(get_config()["device"])
-
-        for param in self.clip_vision_model.parameters():
-            param.requires_grad = False
-
+        self.clip_vision_model = clip_model.encode_image
         self.clip_text_model = clip_model.encode_text
 
         self.bbox_regression = nn.Sequential(
