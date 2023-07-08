@@ -16,7 +16,7 @@ from models.DetachedHeadModel import (
 
 from models.Metrics import Metrics
 from clip import clip
-# from torch.utils.tensorboard import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter
 from models.CustomDataset import CustomDataset
 import utils
 import torch
@@ -33,7 +33,7 @@ if __name__ == "__main__":
     learning_rate = 0.001
     weight_decay = 0.000001
     momentum = 0.9
-    epochs = 40
+    epochs = 3
 
     clip_model, preprocess = clip.load("RN50")
     clip_model = clip_model.eval()
@@ -56,7 +56,7 @@ if __name__ == "__main__":
     val_loader = torch.utils.data.DataLoader(val_dataset, 64, shuffle=True, drop_last=True)
     test_loader = torch.utils.data.DataLoader(test_dataset, 64, shuffle=False, drop_last=True)
 
-    # writer = SummaryWriter(log_dir="runs/exp1")
+    writer = SummaryWriter(log_dir="runs/exp1")
 
     # instantiate the network and move it to the chosen device (GPU)
     net = DetachedHeadModel().to(get_config()["device"])
@@ -70,14 +70,14 @@ if __name__ == "__main__":
 
     # computes evaluation results before training
     print("Before training:")
-    #train_loss, train_accuracy = test_step(net, train_loader, cost_function)
+    train_loss, train_accuracy = test_step(net, train_loader, cost_function)
     val_loss, val_accuracy = test_step(net, val_loader, cost_function)
     test_loss, test_accuracy = test_step(net, test_loader, cost_function)
 
     # log to TensorBoard
-    # log_values(writer, -1, train_loss, train_accuracy, "train")
-    # log_values(writer, -1, val_loss, val_accuracy, "validation")
-    # log_values(writer, -1, test_loss, test_accuracy, "test")
+    log_values(writer, -1, train_loss, train_accuracy, "train")
+    log_values(writer, -1, val_loss, val_accuracy, "validation")
+    log_values(writer, -1, test_loss, test_accuracy, "test")
 
     
     print(
@@ -96,7 +96,8 @@ if __name__ == "__main__":
         val_loss, val_accuracy = test_step(net, val_loader, cost_function)
 
         # logs to TensorBoard
-        # log_values(writer, e, val_loss, val_accuracy, "Validation")
+        log_values(writer, e, train_loss, train_accuracy, "Training")
+        log_values(writer, e, val_loss, val_accuracy, "Validation")
 
         print("Epoch: {:d}".format(e + 1))
         print(
@@ -118,9 +119,9 @@ if __name__ == "__main__":
     test_loss, test_accuracy = test_step(net, test_loader, cost_function)
 
     # log to TensorBoard
-    # log_values(writer, epochs, train_loss, train_accuracy, "train")
-    # log_values(writer, epochs, val_loss, val_accuracy, "validation")
-    # log_values(writer, epochs, test_loss, test_accuracy, "test")
+    log_values(writer, epochs, train_loss, train_accuracy, "train")
+    log_values(writer, epochs, val_loss, val_accuracy, "validation")
+    log_values(writer, epochs, test_loss, test_accuracy, "test")
 
     print(
         "\tTraining loss {:.5f}, Training accuracy {:.2f}".format(
@@ -136,10 +137,6 @@ if __name__ == "__main__":
     print("-----------------------------------------------------")
 
     # closes the logger
-    # writer.close()
+    writer.close()
 
-    # Quantize the model
-    # torch.quantization.prepare(net, inplace=True)
-    # torch.quantization.convert(net, inplace=True)
-
-    torch.save(net.state_dict(), 'best-ever2.pt')
+    torch.save(net.state_dict(), 'best-ever.pt')

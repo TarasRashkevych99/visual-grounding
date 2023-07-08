@@ -56,9 +56,8 @@ def get_optimizer(model, lr, wd, momentum):
     #     weight_decay=wd,
     #     momentum=momentum,
     # )
-    params = list(model.reduce_dimensionality.parameters()) + list(model.bbox_regression.parameters())
     optimizer = torch.optim.Adam(
-        params,
+        model.parameters(),
         lr=lr,
         weight_decay=wd,
     )
