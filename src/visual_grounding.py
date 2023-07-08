@@ -1,11 +1,19 @@
 from config import get_config
-from models.BestDetectorEver import (
-    BestDetectorEver,
+# from models.DetachedHeadModel import (
+#     DetachedHeadModel,
+#     get_cost_function,
+#     get_optimizer,
+#     test_step,
+#     training_step,
+# )
+from models.FullHeadModel import (
+    FullHeadModel,
     get_cost_function,
     get_optimizer,
     test_step,
     training_step,
 )
+
 from models.Metrics import Metrics
 from clip import clip
 # from torch.utils.tensorboard import SummaryWriter
@@ -42,7 +50,7 @@ if __name__ == "__main__":
     #     iou_threshold=0.5, prob_threshold=0.5, dataset_dim=len(val_dataset)
     # )
 
-    best_detector_ever = BestDetectorEver()
+    best_detector_ever = FullHeadModel()
 
     train_loader = torch.utils.data.DataLoader(train_dataset, 64, shuffle=True, drop_last=True)
     val_loader = torch.utils.data.DataLoader(val_dataset, 64, shuffle=True, drop_last=True)
@@ -51,7 +59,7 @@ if __name__ == "__main__":
     # writer = SummaryWriter(log_dir="runs/exp1")
 
     # instantiate the network and move it to the chosen device (GPU)
-    net = BestDetectorEver().to(get_config()["device"])
+    net = FullHeadModel().to(get_config()["device"])
 
     # instantiate the optimizer
     optimizer = get_optimizer(net, learning_rate, weight_decay, momentum)

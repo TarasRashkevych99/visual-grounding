@@ -1,4 +1,4 @@
-from models.BestDetectorEver import BestDetectorEver, compute_iou, torch_iou
+from models.DetachedHeadModel import DetachedHeadModel, compute_iou, torch_iou
 from models.CustomDataset import CustomDataset
 import clip
 import torch
@@ -9,7 +9,7 @@ clip_model, preprocess = clip.load("RN50")
 
 test_set = CustomDataset(split="test", model=clip_model, transform=preprocess)
 
-model = BestDetectorEver()
+model = DetachedHeadModel()
 #model.load_state_dict(torch.load("best-ever.pt", map_location=torch.device('cpu')))
 model.eval()
 

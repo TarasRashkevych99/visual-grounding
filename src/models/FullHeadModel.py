@@ -7,25 +7,17 @@ import math
 from config import get_config
 
 
-class BestDetectorEver(nn.Module):
+class FullHeadModel(nn.Module):
     def __init__(self):
         super().__init__()
 
-        self.clip_vision_model = get_clip_model()
+        clip_model, _ = clip.load("RN50")
+        self.clip_vision_model = clip_model.visual
 
         for param in self.clip_vision_model.parameters():
             param.requires_grad = False
 
-        clip_model, _ = clip.load("RN50")
         self.clip_text_model = clip_model.encode_text
-
-        self.reduce_dimensionality = nn.Sequential(
-            nn.BatchNorm2d(2048),
-            nn.AvgPool2d(kernel_size=2, stride=2),
-            #nn.Conv2d(2048, 1024, kernel_size=4, stride=4),
-            nn.Flatten(),
-            nn.Linear(18432, 1024),
-        )
 
         self.bbox_regression = nn.Sequential(
             nn.BatchNorm1d(2048),
@@ -42,7 +34,6 @@ class BestDetectorEver(nn.Module):
     def forward(self, images, texts):
         images = self.clip_vision_model(images)
         texts = self.clip_text_model(texts)
-        images = self.reduce_dimensionality(images)
         embeddings = torch.cat((images, texts), dim=1)
         bbox = self.bbox_regression(embeddings)
         return bbox
@@ -212,11 +203,4 @@ def torch_iou(predicted_box, ground_box):
     box_2 = torch.tensor([x2_min, y2_min, x2_max, y2_max])
 
     return torchvision.ops.box_iou(box_1.unsqueeze(0), box_2.unsqueeze(0))
-
-def get_clip_model():
-    clip_model, _ = clip.load("RN50")
-    clip_vision_model = clip_model.visual
-    layers = list(clip_vision_model.children())
-    vision_model = nn.Sequential(*layers[:-1])
-    return vision_model.float().to(get_config()["device"])
 
