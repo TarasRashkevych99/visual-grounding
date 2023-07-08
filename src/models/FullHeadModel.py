@@ -6,7 +6,6 @@ import math
 
 from config import get_config
 
-
 class FullHeadModel(nn.Module):
     def __init__(self):
         super().__init__()
@@ -37,17 +36,9 @@ class FullHeadModel(nn.Module):
         embeddings = torch.cat((images, texts), dim=1)
         bbox = self.bbox_regression(embeddings)
         return bbox
-    
-    def _create_positional_encoding(self):
-        # Create positional encodings for sequence length
-        pe = torch.zeros(self.sequence_length, self.input_dim)
-        position = torch.arange(0, self.sequence_length, dtype=torch.float).unsqueeze(1)
-        div_term = torch.exp(torch.arange(0, self.input_dim, 2).float() * (-math.log(10000.0) / self.input_dim))
-        pe[:, 0::2] = torch.sin(position * div_term)
-        pe[:, 1::2] = torch.cos(position * div_term)
 
-        return pe
-
+    def __str__(self) -> str:
+        return "FullHeadModel"
 
 def get_optimizer(model, lr, wd, momentum):
     # optimizer = torch.optim.SGD(

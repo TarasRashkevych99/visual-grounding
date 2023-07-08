@@ -60,6 +60,7 @@ if __name__ == "__main__":
 
     # instantiate the network and move it to the chosen device (GPU)
     net = FullHeadModel().to(get_config()["device"])
+    print(net)
 
     # instantiate the optimizer
     optimizer = get_optimizer(net, learning_rate, weight_decay, momentum)
