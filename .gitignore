@@ -171,3 +171,6 @@ refcocog/**
 
 #Local config files
 .DS_Store
+
+#Runs folder
+runs/**
