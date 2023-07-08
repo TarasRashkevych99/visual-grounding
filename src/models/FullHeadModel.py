@@ -11,7 +11,7 @@ class FullHeadModel(nn.Module):
         super().__init__()
 
         clip_model, _ = clip.load("RN50")
-        self.clip_vision_model = clip_model.visual
+        self.clip_vision_model = clip_model.visual.float().to(get_config()["device"])
 
         for param in self.clip_vision_model.parameters():
             param.requires_grad = False
