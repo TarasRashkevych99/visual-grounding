@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torchvision
 import clip
 import math
 
@@ -156,37 +157,61 @@ def test_step(net, data_loader, cost_function):
 
 
 def compute_iou(predicted_box, ground_box):
-    x, y, w, h = predicted_box
-    x1 = x - w / 2
-    y1 = y - h / 2
-    x2 = x + w / 2
-    y2 = y + h / 2
-    predicted_box = [x1, y1, x2, y2]
+    predicted_box = predicted_box.squeeze(0)
+    x, y, w, h = predicted_box.tolist()
+    x1_min = x - w / 2
+    y1_min = y - h / 2
+    x1_max = x + w / 2
+    y1_max = y + h / 2
 
-    x, y, w, h = ground_box
-    x1 = x - w / 2
-    y1 = y - h / 2
-    x2 = x + w / 2
-    y2 = y + h / 2
-    ground_box = [x1, y1, x2, y2]
-    
-    # print(predicted_box)
-    # print(ground_box)
-    x1 = max(predicted_box[0], ground_box[0])
-    y1 = max(predicted_box[1], ground_box[1])
-    x2 = min(predicted_box[2], ground_box[2])
-    y2 = min(predicted_box[3], ground_box[3])
-    intersection_area = max(0, x2 - x1 + 1) * max(0, y2 - y1 + 1)
-    box1_area = (predicted_box[2] - predicted_box[0] + 1) * (
-        predicted_box[3] - predicted_box[1] + 1
-    )
-    box2_area = (ground_box[2] - ground_box[0] + 1) * (
-        ground_box[3] - ground_box[1] + 1
-    )
+    x, y, w, h = ground_box.tolist()
+    x2_min = x - w / 2
+    y2_min = y - h / 2
+    x2_max = x + w / 2
+    y2_max = y + h / 2
 
-    # Calculate the IoU
-    iou = intersection_area / float(box1_area + box2_area - intersection_area)
+    # Calculate intersection coordinates
+    x_inter_min = max(x1_min, x2_min)
+    y_inter_min = max(y1_min, y2_min)
+    x_inter_max = min(x1_max, x2_max)
+    y_inter_max = min(y1_max, y2_max)
+
+    # Calculate intersection area
+    intersection_width = max(0, x_inter_max - x_inter_min)
+    intersection_height = max(0, y_inter_max - y_inter_min)
+    intersection_area = intersection_width * intersection_height
+
+    # Calculate box areas
+    box1_area = (x1_max - x1_min) * (y1_max - y1_min)
+    box2_area = (x2_max - x2_min) * (y2_max - y2_min)
+
+    # Calculate union area
+    union_area = box1_area + box2_area - intersection_area
+
+    # Calculate IoU
+    iou = intersection_area / union_area
+
     return iou
+
+def torch_iou(predicted_box, ground_box):
+    predicted_box = predicted_box.squeeze(0)
+    x, y, w, h = predicted_box.tolist()
+    x1_min = x - w / 2
+    y1_min = y - h / 2
+    x1_max = x + w / 2
+    y1_max = y + h / 2
+
+    box_1 = torch.tensor([x1_min, y1_min, x1_max, y1_max])
+
+    x, y, w, h = ground_box.tolist()
+    x2_min = x - w / 2
+    y2_min = y - h / 2
+    x2_max = x + w / 2
+    y2_max = y + h / 2
+
+    box_2 = torch.tensor([x2_min, y2_min, x2_max, y2_max])
+
+    return torchvision.ops.box_iou(box_1.unsqueeze(0), box_2.unsqueeze(0))
 
 def get_clip_model():
     clip_model, _ = clip.load("RN50")

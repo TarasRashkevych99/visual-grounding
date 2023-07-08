@@ -61,7 +61,7 @@ if __name__ == "__main__":
 
     # computes evaluation results before training
     print("Before training:")
-    train_loss, train_accuracy = test_step(net, train_loader, cost_function)
+    #train_loss, train_accuracy = test_step(net, train_loader, cost_function)
     val_loss, val_accuracy = test_step(net, val_loader, cost_function)
     test_loss, test_accuracy = test_step(net, test_loader, cost_function)
 
@@ -70,11 +70,7 @@ if __name__ == "__main__":
     # log_values(writer, -1, val_loss, val_accuracy, "validation")
     # log_values(writer, -1, test_loss, test_accuracy, "test")
 
-    print(
-        "\tTraining loss {:.5f}, Training accuracy {:.2f}".format(
-            train_loss, train_accuracy
-        )
-    )
+    
     print(
         "\tValidation loss {:.5f}, Validation accuracy {:.2f}".format(
             val_loss, val_accuracy

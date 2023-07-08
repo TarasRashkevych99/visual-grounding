@@ -117,3 +117,9 @@ def xywh_to_xyxy(xywh):
     xyxy[2] = xywh[0] + xywh[2]
     xyxy[3] = xywh[1] + xywh[3]
     return xyxy
+
+def xywh_to_topleft(xywh):
+    x, y, w, h = xywh.tolist()
+    x1 = x - w / 2
+    y1 = y - h / 2
+    return torch.tensor([x1, y1, w, h])
