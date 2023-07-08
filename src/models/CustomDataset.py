@@ -11,7 +11,7 @@ from torchvision import transforms
 
 
 class CustomDataset(Dataset):
-    def __init__(self, transform=None, split="train", shuffle=False, model=None):
+    def __init__(self, transform=None, split="train", model=None):
         super().__init__()
         self.clip = model
         self.annotations_path = get_config()["annotations_path"]
@@ -29,11 +29,9 @@ class CustomDataset(Dataset):
             self.instances = list(
                 json.load(open(f"{self.annotations_path}/instances_test.json")).values()
             )
-        self.instances = self.instances[:64]
+        self.instances = self.instances[:6400]
         self.images_path = get_config()["images_path"]
         self.transform = transform
-        if shuffle:
-            random.shuffle(self.instances)
 
     def __len__(self):
         return len(self.instances)

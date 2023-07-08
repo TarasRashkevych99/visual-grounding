@@ -31,10 +31,10 @@ if __name__ == "__main__":
     clip_model = clip_model.eval()
 
     train_dataset = CustomDataset(
-        split="train", shuffle=True, model=clip_model, transform=preprocess
+        split="train", model=clip_model, transform=preprocess
     )
     val_dataset = CustomDataset(
-        split="val", shuffle=True, model=clip_model, transform=preprocess
+        split="val", model=clip_model, transform=preprocess
     )
     test_dataset = CustomDataset(split="test", model=clip_model, transform=preprocess)
 
@@ -44,8 +44,8 @@ if __name__ == "__main__":
 
     best_detector_ever = BestDetectorEver()
 
-    train_loader = torch.utils.data.DataLoader(train_dataset, 64, shuffle=False, drop_last=True)
-    val_loader = torch.utils.data.DataLoader(val_dataset, 64, shuffle=False, drop_last=True)
+    train_loader = torch.utils.data.DataLoader(train_dataset, 64, shuffle=True, drop_last=True)
+    val_loader = torch.utils.data.DataLoader(val_dataset, 64, shuffle=True, drop_last=True)
     test_loader = torch.utils.data.DataLoader(test_dataset, 64, shuffle=False, drop_last=True)
 
     # writer = SummaryWriter(log_dir="runs/exp1")
