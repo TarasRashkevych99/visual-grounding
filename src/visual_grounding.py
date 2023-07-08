@@ -25,7 +25,7 @@ if __name__ == "__main__":
     learning_rate = 0.001
     weight_decay = 0.000001
     momentum = 0.9
-    epochs = 10
+    epochs = 50
 
     clip_model, preprocess = clip.load("RN50")
     clip_model = clip_model.eval()
