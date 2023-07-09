@@ -194,6 +194,16 @@ if __name__ == "__main__":
                 detect_val_loss, detect_val_accuracy
             )
         )
+        print(
+            "\tClassification training loss {:.5f}, training accuracy {:.2f}".format(
+                class_train_loss, class_train_accuracy
+            )
+        )
+        print(
+            "\tClassification validation loss {:.5f}, validation accuracy {:.2f}".format(
+                class_val_loss, class_val_accuracy
+            )
+        )
         print("-----------------------------------------------------")
 
     # compute final evaluation results
