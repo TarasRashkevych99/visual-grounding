@@ -62,7 +62,7 @@ class DetachedHeadModel(nn.Module):
         return "DetachedHeadModel"
 
 
-def get_detect_optimizer(model, lr, wd, momentum):
+def get_detect_optimizer(model, lr, wd):
     # optimizer = torch.optim.SGD(
     #     model.parameters(),
     #     lr=lr / 10,
@@ -105,8 +105,8 @@ def training_step(
     net,
     data_loader,
     detect_optimizer,
-    class_optimizer,
     detect_cost_function,
+    class_optimizer,
     class_cost_function,
 ):
     samples = 0.0

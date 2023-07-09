@@ -68,7 +68,7 @@ if __name__ == "__main__":
     print(net)
 
     # instantiate the optimizer
-    detect_optimizer = get_detect_optimizer(net, learning_rate, weight_decay, momentum)
+    detect_optimizer = get_detect_optimizer(net, learning_rate, weight_decay)
     class_optimizer = get_class_optimizer(net, learning_rate, weight_decay, momentum)
 
     # define the cost function
