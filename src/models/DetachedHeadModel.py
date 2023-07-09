@@ -44,7 +44,7 @@ class DetachedHeadModel(nn.Module):
         )
 
     def forward(self, images, texts):
-        encoded_texts = self.classifier_backbone(texts)
+        encoded_texts = self.classifier_backbone(texts).float()
         unbounded_class_probs = self.classifier_head(encoded_texts)
         images = self.clip_vision_model(images)
         texts = self.clip_text_model(texts)
