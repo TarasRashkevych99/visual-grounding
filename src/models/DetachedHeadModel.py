@@ -45,8 +45,8 @@ class DetachedHeadModel(nn.Module):
         )
 
     def forward(self, images, texts):
-        encoded_texts = self.classifier_text_backbone(texts).float()
-        encoded_images = self.classifier_visual_backbone(images).float()
+        encoded_texts = self.classifier_text_backbone(texts)
+        encoded_images = self.classifier_visual_backbone(images)
         unbounded_class_probs = self.classifier_head(
             torch.cat((encoded_images, encoded_texts), dim=1)
         )
