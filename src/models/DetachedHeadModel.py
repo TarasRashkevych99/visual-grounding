@@ -26,7 +26,7 @@ class DetachedHeadModel(nn.Module):
         for param in self.classifier_visual_backbone.parameters():
             param.requires_grad = False
 
-        self.classifier_head = torch.nn.Linear(1024, 91)
+        self.classifier_head = torch.nn.Linear(2048, 91)
 
         self.reduce_dimensionality = nn.Sequential(
             nn.BatchNorm2d(2048),
