@@ -20,7 +20,7 @@ class DetachedHeadModel(nn.Module):
         self.clip_text_model = clip_model.encode_text
 
         clip_for_class, _ = clip.load("RN50")
-        self.classifier_backbone = clip_for_class.visual
+        self.classifier_backbone = clip_for_class.visual.float()
 
         for param in self.classifier_backbone.parameters():
             param.requires_grad = False
