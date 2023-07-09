@@ -29,7 +29,7 @@ class CustomDataset(Dataset):
             self.instances = list(
                 json.load(open(f"{self.annotations_path}/instances_test.json")).values()
             )
-        self.instances = self.instances[:64]
+        self.instances = self.instances[:300]
         self.images_path = get_config()["images_path"]
         self.transform = transform
 
