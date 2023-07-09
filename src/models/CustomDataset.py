@@ -53,7 +53,6 @@ class CustomDataset(Dataset):
         category_id = torch.tensor(self.instances[index]["category_id"]).to(
             get_config()["device"]
         )
-        print(random_sentence.shape)
         # embedding = utils.encode_data_with_clip(self.clip, image, random_sentence)
         return image, random_sentence.squeeze(0), bbox, category_id
 

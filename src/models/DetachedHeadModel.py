@@ -49,7 +49,7 @@ class DetachedHeadModel(nn.Module):
         encoded_images = self.classifier_backbone(images)
         unbounded_class_probs = self.classifier_head(encoded_images)
         images = self.clip_vision_model(images)
-        texts = self.clip_text_model(texts)
+        texts = self.clip_text_model(texts.float())
         images = self.reduce_dimensionality(images)
         embeddings = torch.cat((images, texts), dim=1)
         bbox = self.bbox_regression(embeddings)
