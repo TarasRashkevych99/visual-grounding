@@ -19,7 +19,8 @@ class DetachedHeadModel(nn.Module):
         clip_model, _ = clip.load("RN50")
         self.clip_text_model = clip_model.encode_text
 
-        self.classifier_backbone = clip_model.visual.float()
+        clip_for_class, _ = clip.load("RN50")
+        self.classifier_backbone = clip_for_class.visual
 
         for param in self.classifier_backbone.parameters():
             param.requires_grad = False
@@ -49,7 +50,7 @@ class DetachedHeadModel(nn.Module):
         encoded_images = self.classifier_backbone(images)
         unbounded_class_probs = self.classifier_head(encoded_images)
         images = self.clip_vision_model(images)
-        texts = self.clip_text_model(texts).float()
+        texts = self.clip_text_model(texts)
         images = self.reduce_dimensionality(images)
         embeddings = torch.cat((images, texts), dim=1)
         bbox = self.bbox_regression(embeddings)
