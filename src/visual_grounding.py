@@ -1,11 +1,14 @@
 from config import get_config
 from models.DetachedHeadModel import (
     DetachedHeadModel,
-    get_cost_function,
-    get_optimizer,
+    get_class_cost_function,
+    get_class_optimizer,
+    get_detect_cost_function,
+    get_detect_optimizer,
     test_step,
     training_step,
 )
+
 # from models.FullHeadModel import (
 #     FullHeadModel,
 #     get_cost_function,
@@ -38,12 +41,8 @@ if __name__ == "__main__":
     clip_model, preprocess = clip.load("RN50")
     clip_model = clip_model.eval()
 
-    train_dataset = CustomDataset(
-        split="train", model=clip_model, transform=preprocess
-    )
-    val_dataset = CustomDataset(
-        split="val", model=clip_model, transform=preprocess
-    )
+    train_dataset = CustomDataset(split="train", model=clip_model, transform=preprocess)
+    val_dataset = CustomDataset(split="val", model=clip_model, transform=preprocess)
     test_dataset = CustomDataset(split="test", model=clip_model, transform=preprocess)
 
     # metrics = Metrics(
@@ -52,9 +51,15 @@ if __name__ == "__main__":
 
     best_detector_ever = DetachedHeadModel()
 
-    train_loader = torch.utils.data.DataLoader(train_dataset, 64, shuffle=True, drop_last=True)
-    val_loader = torch.utils.data.DataLoader(val_dataset, 64, shuffle=True, drop_last=True)
-    test_loader = torch.utils.data.DataLoader(test_dataset, 64, shuffle=False, drop_last=True)
+    train_loader = torch.utils.data.DataLoader(
+        train_dataset, 64, shuffle=True, drop_last=True
+    )
+    val_loader = torch.utils.data.DataLoader(
+        val_dataset, 64, shuffle=True, drop_last=True
+    )
+    test_loader = torch.utils.data.DataLoader(
+        test_dataset, 64, shuffle=False, drop_last=True
+    )
 
     writer = SummaryWriter(log_dir="runs/exp1")
 
@@ -63,80 +68,213 @@ if __name__ == "__main__":
     print(net)
 
     # instantiate the optimizer
-    optimizer = get_optimizer(net, learning_rate, weight_decay, momentum)
+    detect_optimizer = get_detect_optimizer(net, learning_rate, weight_decay, momentum)
+    class_optimizer = get_class_optimizer(net, learning_rate, weight_decay, momentum)
 
     # define the cost function
-    cost_function = get_cost_function()
+    detect_cost_function = get_detect_cost_function()
+    class_cost_function = get_class_cost_function()
 
     # computes evaluation results before training
     print("Before training:")
-    train_loss, train_accuracy = test_step(net, train_loader, cost_function)
-    val_loss, val_accuracy = test_step(net, val_loader, cost_function)
-    test_loss, test_accuracy = test_step(net, test_loader, cost_function)
+    (
+        detect_train_loss,
+        detect_train_accuracy,
+        class_train_loss,
+        class_train_accuracy,
+    ) = test_step(net, train_loader, detect_cost_function, class_cost_function)
+
+    (
+        detect_val_loss,
+        detect_val_accuracy,
+        class_val_loss,
+        class_val_accuracy,
+    ) = test_step(net, val_loader, detect_cost_function, class_cost_function)
+    (
+        detect_test_loss,
+        detect_test_accuracy,
+        class_test_loss,
+        class_test_accuracy,
+    ) = test_step(net, test_loader, detect_cost_function, class_cost_function)
 
     # log to TensorBoard
-    log_values(writer, -1, train_loss, train_accuracy, "train")
-    log_values(writer, -1, val_loss, val_accuracy, "validation")
-    log_values(writer, -1, test_loss, test_accuracy, "test")
+    log_values(
+        writer, -1, detect_train_loss, detect_train_accuracy, "Detection Training"
+    )
+    log_values(writer, -1, detect_val_loss, detect_val_accuracy, "Detection Validation")
+    log_values(writer, -1, detect_test_loss, detect_test_accuracy, "Detection Test")
+    log_values(
+        writer, -1, class_train_loss, class_train_accuracy, "Classification Training"
+    )
+    log_values(
+        writer, -1, class_val_loss, class_val_accuracy, "Classification Validation"
+    )
+    log_values(writer, -1, class_test_loss, class_test_accuracy, "Classification Test")
 
-    
     print(
-        "\tValidation loss {:.5f}, Validation accuracy {:.2f}".format(
-            val_loss, val_accuracy
+        "\tDetection training loss {:.5f}, training accuracy {:.2f}".format(
+            detect_train_loss, detect_train_accuracy
         )
     )
-    print("\tTest loss {:.5f}, Test accuracy {:.2f}".format(test_loss, test_accuracy))
+
+    print(
+        "\tDetection validation loss {:.5f}, validation accuracy {:.2f}".format(
+            detect_val_loss, detect_val_accuracy
+        )
+    )
+    print(
+        "\tDetection test loss {:.5f}, test accuracy {:.2f}".format(
+            detect_test_loss, detect_test_accuracy
+        )
+    )
+
+    print(
+        "\tClassification training loss {:.5f}, training accuracy {:.2f}".format(
+            class_train_loss, class_train_accuracy
+        )
+    )
+
+    print(
+        "\tClassification validation loss {:.5f}, validation accuracy {:.2f}".format(
+            class_val_loss, class_val_accuracy
+        )
+    )
+    print(
+        "\tClassification test loss {:.5f}, test accuracy {:.2f}".format(
+            class_test_loss, class_test_accuracy
+        )
+    )
+
     print("-----------------------------------------------------")
 
     # for each epoch, train the network and then compute evaluation results
     for e in range(epochs):
-        train_loss, train_accuracy = training_step(
-            net, train_loader, optimizer, cost_function
+        (
+            detect_train_loss,
+            detect_train_accuracy,
+            class_train_loss,
+            class_train_accuracy,
+        ) = training_step(
+            net,
+            train_loader,
+            detect_optimizer,
+            detect_cost_function,
+            class_optimizer,
+            class_cost_function,
         )
-        val_loss, val_accuracy = test_step(net, val_loader, cost_function)
+        (
+            detect_val_loss,
+            detect_val_accuracy,
+            class_val_loss,
+            class_val_accuracy,
+        ) = test_step(net, val_loader, detect_cost_function, class_cost_function)
 
         # logs to TensorBoard
-        log_values(writer, e, train_loss, train_accuracy, "Training")
-        log_values(writer, e, val_loss, val_accuracy, "Validation")
+        log_values(
+            writer, e, detect_train_loss, detect_train_accuracy, "Detection Training"
+        )
+        log_values(
+            writer, e, detect_val_loss, detect_val_accuracy, "Detection Validation"
+        )
+        log_values(
+            writer, e, class_train_loss, class_train_accuracy, "Classification Training"
+        )
+        log_values(
+            writer, e, class_val_loss, class_val_accuracy, "Classification Validation"
+        )
 
         print("Epoch: {:d}".format(e + 1))
         print(
-            "\tTraining loss during training{:.5f}, Training accuracy {:.2f}".format(
-                train_loss, train_accuracy
+            "\tDetection training loss {:.5f}, training accuracy {:.2f}".format(
+                detect_train_loss, detect_train_accuracy
             )
         )
         print(
-            "\tValidation loss during training{:.5f}, Validation accuracy {:.2f}".format(
-                val_loss, val_accuracy
+            "\tDetection validation loss {:.5f}, validation accuracy {:.2f}".format(
+                detect_val_loss, detect_val_accuracy
             )
         )
         print("-----------------------------------------------------")
 
     # compute final evaluation results
     print("After training:")
-    train_loss, train_accuracy = test_step(net, train_loader, cost_function)
-    val_loss, val_accuracy = test_step(net, val_loader, cost_function)
-    test_loss, test_accuracy = test_step(net, test_loader, cost_function)
+    (
+        detect_train_loss,
+        detect_train_accuracy,
+        class_train_loss,
+        class_train_accuracy,
+    ) = test_step(net, train_loader, detect_cost_function, class_cost_function)
+
+    (
+        detect_val_loss,
+        detect_val_accuracy,
+        class_val_loss,
+        class_val_accuracy,
+    ) = test_step(net, val_loader, detect_cost_function, class_cost_function)
+    (
+        detect_test_loss,
+        detect_test_accuracy,
+        class_test_loss,
+        class_test_accuracy,
+    ) = test_step(net, test_loader, detect_cost_function, class_cost_function)
 
     # log to TensorBoard
-    log_values(writer, epochs, train_loss, train_accuracy, "train")
-    log_values(writer, epochs, val_loss, val_accuracy, "validation")
-    log_values(writer, epochs, test_loss, test_accuracy, "test")
+    log_values(
+        writer, epochs, detect_train_loss, detect_train_accuracy, "Detection Training"
+    )
+    log_values(
+        writer, epochs, detect_val_loss, detect_val_accuracy, "Detection Validation"
+    )
+    log_values(writer, epochs, detect_test_loss, detect_test_accuracy, "Detection Test")
+    log_values(
+        writer,
+        epochs,
+        class_train_loss,
+        class_train_accuracy,
+        "Classification Training",
+    )
+    log_values(
+        writer, epochs, class_val_loss, class_val_accuracy, "Classification Validation"
+    )
+    log_values(
+        writer, epochs, class_test_loss, class_test_accuracy, "Classification Test"
+    )
 
     print(
-        "\tTraining loss {:.5f}, Training accuracy {:.2f}".format(
-            train_loss, train_accuracy
+        "\tDetection training loss {:.5f}, training accuracy {:.2f}".format(
+            detect_train_loss, detect_train_accuracy
+        )
+    )
+
+    print(
+        "\tDetection validation loss {:.5f}, validation accuracy {:.2f}".format(
+            detect_val_loss, detect_val_accuracy
         )
     )
     print(
-        "\tValidation loss {:.5f}, Validation accuracy {:.2f}".format(
-            val_loss, val_accuracy
+        "\tDetection test loss {:.5f}, test accuracy {:.2f}".format(
+            detect_test_loss, detect_test_accuracy
         )
     )
-    print("\tTest loss {:.5f}, Test accuracy {:.2f}".format(test_loss, test_accuracy))
-    print("-----------------------------------------------------")
+
+    print(
+        "\tClassification training loss {:.5f}, training accuracy {:.2f}".format(
+            class_train_loss, class_train_accuracy
+        )
+    )
+
+    print(
+        "\tClassification validation loss {:.5f}, validation accuracy {:.2f}".format(
+            class_val_loss, class_val_accuracy
+        )
+    )
+    print(
+        "\tClassification test loss {:.5f}, test accuracy {:.2f}".format(
+            class_test_loss, class_test_accuracy
+        )
+    )
 
     # closes the logger
     writer.close()
 
-    torch.save(net.state_dict(), 'best-ever.pt')
+    torch.save(net.state_dict(), "best-ever.pt")

@@ -42,7 +42,7 @@ class CustomDataset(Dataset):
         bbox = (bbox[0] + (bbox[2] / 2), bbox[1] + (bbox[3] / 2), bbox[2], bbox[3])
         width, height = image.size
         bbox = self._normalize_bbox(bbox, width, height).to(get_config()["device"])
-        image = image.resize((224,224))
+        image = image.resize((224, 224))
 
         if self.transform:
             image = self.transform(image).to(get_config()["device"])
@@ -50,10 +50,12 @@ class CustomDataset(Dataset):
         idx = np.random.randint(len(sentences))
         random_sentence = sentences[idx]
         random_sentence = clip.tokenize(random_sentence).to(get_config()["device"])
-        category_id = self.instances[index]["category_id"]
-        #embedding = utils.encode_data_with_clip(self.clip, image, random_sentence)
+        category_id = torch.tensor(self.instances[index]["category_id"]).to(
+            get_config()["device"]
+        )
+        # embedding = utils.encode_data_with_clip(self.clip, image, random_sentence)
         return image, random_sentence.squeeze(0), bbox, category_id
-    
+
     def _normalize_bbox(self, bbox, width, height):
         x, y, w, h = bbox
         return torch.tensor([x / width, y / height, w / width, h / height])

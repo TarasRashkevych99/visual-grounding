@@ -11,11 +11,11 @@ clip_model, preprocess = clip.load("RN50")
 test_set = CustomDataset(split="test", model=clip_model, transform=preprocess)
 
 model = DetachedHeadModel()
-model.load_state_dict(torch.load("detached-head.pt", map_location=torch.device('cpu')))
+model.load_state_dict(torch.load("real-model.pt", map_location=torch.device('cpu')))
 model.eval()
 
 with torch.no_grad():
-    for i in range(30):
+    for i in range(100, 150):
         image, text, bbox, category_id = test_set[i]
         predicted_bbox = model(image.unsqueeze(0), text.unsqueeze(0))
         predicted_bbox = predicted_bbox[0]
