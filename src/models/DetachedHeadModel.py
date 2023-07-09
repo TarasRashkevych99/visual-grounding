@@ -23,7 +23,7 @@ class DetachedHeadModel(nn.Module):
         self.classifier_text_backbone = clip_for_class.encode_text
         # self.classifier_visual_backbone = clip_for_class.visual.float()
 
-        self.classifier_head = torch.nn.Linear(2048, 91)
+        self.classifier_head = torch.nn.Linear(1024, 91)
 
         self.reduce_dimensionality = nn.Sequential(
             nn.BatchNorm2d(2048),
