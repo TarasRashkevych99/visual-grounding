@@ -21,7 +21,10 @@ class DetachedHeadModel(nn.Module):
 
         clip_for_class, _ = clip.load("RN50")
         self.classifier_text_backbone = clip_for_class.encode_text
-        # self.classifier_visual_backbone = clip_for_class.visual.float()
+        self.classifier_visual_backbone = clip_for_class.visual
+
+        for param in self.classifier_visual_backbone.parameters():
+            param.requires_grad = False
 
         self.classifier_head = torch.nn.Linear(1024, 91)
 
@@ -46,8 +49,10 @@ class DetachedHeadModel(nn.Module):
 
     def forward(self, images, texts):
         encoded_texts = self.classifier_text_backbone(texts).float()
-        # encoded_images = self.classifier_visual_backbone(images)
-        unbounded_class_probs = self.classifier_head(encoded_texts)
+        encoded_images = self.classifier_visual_backbone(images)
+        unbounded_class_probs = self.classifier_head(
+            torch.cat((encoded_images, encoded_texts), dim=1)
+        )
         images = self.clip_vision_model(images)
         texts = self.clip_text_model(texts)
         images = self.reduce_dimensionality(images)
