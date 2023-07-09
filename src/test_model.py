@@ -16,7 +16,7 @@ model.load_state_dict(torch.load("best-ever.pt", map_location=torch.device("cpu"
 model.eval()
 
 with torch.no_grad():
-    for i in range(30, 40):
+    for i in range(20):
         image, text, bbox, category_id = test_set[i]
         predicted_bbox, unbound_class_probs = model(
             image.unsqueeze(0), text.unsqueeze(0)
