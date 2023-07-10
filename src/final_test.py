@@ -19,6 +19,7 @@ model.load_state_dict(checkpoint["model"])
 model.eval()
 
 cumulative_iou = 0.0
+class_accuracy = 0.0
 counter = 0
 with torch.no_grad():
     for i in range(len(test_set)):
@@ -34,6 +35,10 @@ with torch.no_grad():
         width, height = orginal_image.size
         cumulative_iou += compute_iou(predicted_bbox, bbox)
         print("Intersection over union:", compute_iou(predicted_bbox, bbox))
+        _, predicted_class_id = unbound_class_probs[0].max()
+
+        # compute training accuracy
+        class_accuracy += predicted_class_id.eq(category_id).item()
         # _, ax = plt.subplots(1)
         # ax.imshow(orginal_image)
         # bbox = xywh_to_topleft(bbox)
