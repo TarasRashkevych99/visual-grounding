@@ -11,7 +11,9 @@ from torchvision import transforms
 
 
 class CustomDataset(Dataset):
-    def __init__(self, transform=None, split="train", model=None):
+    def __init__(
+        self, transform=None, split="train", model=None, original_image_required=False
+    ):
         super().__init__()
         self.clip = model
         self.annotations_path = get_config()["annotations_path"]
@@ -32,12 +34,15 @@ class CustomDataset(Dataset):
         self.instances = self.instances
         self.images_path = get_config()["images_path"]
         self.transform = transform
+        self.original_image_required = original_image_required
 
     def __len__(self):
         return len(self.instances)
 
     def __getitem__(self, index):
         image = Image.open(f"{self.images_path}/{self.instances[index]['image_name']}")
+        if self.original_image_required:
+            original_image = image.copy()
         bbox = self.instances[index]["bbox"]
         bbox = (bbox[0] + (bbox[2] / 2), bbox[1] + (bbox[3] / 2), bbox[2], bbox[3])
         width, height = image.size
@@ -53,7 +58,14 @@ class CustomDataset(Dataset):
         category_id = torch.tensor(self.instances[index]["category_id"]).to(
             get_config()["device"]
         )
-        # embedding = utils.encode_data_with_clip(self.clip, image, random_sentence)
+        if self.original_image_required:
+            return (
+                image,
+                random_sentence.squeeze(0),
+                bbox,
+                category_id,
+                original_image,
+            )
         return image, random_sentence.squeeze(0), bbox, category_id
 
     def _normalize_bbox(self, bbox, width, height):
