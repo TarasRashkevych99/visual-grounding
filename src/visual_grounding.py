@@ -287,4 +287,22 @@ if __name__ == "__main__":
     # closes the logger
     writer.close()
 
-    torch.save(net.state_dict(), "best-ever.pt")
+    checkpoint = {
+        "model": net.state_dict(),
+        "detect_optimizer": detect_optimizer.state_dict(),
+        "class_optimizer": class_optimizer.state_dict(),
+        "detect_cost_function": detect_cost_function.state_dict(),
+        "class_cost_function": class_cost_function.state_dict(),
+    }
+    torch.save(checkpoint, "best-ever.pt")
+
+    # Load the checkpoint
+
+    # checkpoint = torch.load("best-ever.pt")
+    # net.load_state_dict(checkpoint["model"])
+    # detect_optimizer.load_state_dict(checkpoint["detect_optimizer"])
+    # class_optimizer.load_state_dict(checkpoint["class_optimizer"])
+    # detect_cost_function.load_state_dict(checkpoint["detect_cost_function"])
+    # class_cost_function.load_state_dict(checkpoint["class_cost_function"])
+
+    #torch.save(net.state_dict(), "best-ever.pt")
